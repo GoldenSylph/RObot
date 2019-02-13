@@ -94,7 +94,7 @@ class ProbabilityModel(Initable):
         tmp_main_data['action'] = low_high_data
 
     def show_c3_hist(self, tmp_main_data):
-        prepare_c3(tmp_main_data)
+        self.prepare_c3(tmp_main_data)
         tmp_main_data['action'].plot(kind='hist')
         plt.show()
 
@@ -104,7 +104,7 @@ class ProbabilityModel(Initable):
         describe_price = main_data['prices'].describe()
         print('Statistics: ')
         print(describe_price)
-        print('Reduced mean - ' + str(reduced_mean(main_data['prices'], 10000)))
+        print('Reduced mean - ' + str(self.reduced_mean(main_data['prices'], 10000)))
         print('Mode - ' + str(main_data['prices'].mode()))
         print('Mean absolute deviation - ' + str(main_data['prices'].mad()))
         print('Range - ' + str(max_price - min_price))
@@ -130,7 +130,7 @@ class ProbabilityModel(Initable):
         main_data = pd.read_csv(data_file_name)
         self.prepare_c3(main_data)
         
-        main_data['dates'] = dates_to_datetime(main_data, with_time)
+        main_data['dates'] = self.dates_to_datetime(main_data, with_time)
         main_data['dates'] = main_data['dates'].apply(lambda x: x.timestamp())
 
         X, y = main_data[['dates']], main_data['action']
