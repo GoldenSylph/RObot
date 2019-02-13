@@ -201,7 +201,7 @@ try:
             frame[i] = df
             print(i)
 
-    df = df.concat[frame, index_ignore=True]
+    df = df.concat(frame, ignore_index=True)
 
     #Sort data by date
     df = df.sort_values('dates')
