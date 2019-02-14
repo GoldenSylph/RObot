@@ -6,6 +6,7 @@ import datetime as dt
 from datetime import timedelta
 import calendar
 import time
+import os
 from apscheduler.schedulers.background import BackgroundScheduler
 
 
@@ -23,7 +24,7 @@ class DataProvider:
         self.composed_data = {}
         self.data_file_name = 'full_idex_eth_aura_data.csv'
 
-    def get_main_data(self, first='ETH', second='AURA', force_update=False):
+    def get_main_data(self, first='ETH', second='AURA', force_update=False, from_file=False):
         
         try:
             self.main_data
@@ -41,42 +42,53 @@ class DataProvider:
             force_update = True
     
         if not force_update:
-            if not self.main_data.empty:
+            if from_file:
+                if not os.path.isfile('./' + self.data_file_name):
+                    self.start_to_download()
+                    self.load_to_file()
+                self.main_data = pd.read_csv(self.data_file_name)
                 return self.main_data
+            elif not self.main_data.empty:
+                return self.main_data
+            else:
+                return self.downloaded_data()
         else: 
-            try:
-                #'2017-11-22'
-                cursor_string = ''
-                page = 0
-                print('Starting to download...')
-                while (True):
-                    request_raw = 'https://api.idex.market/returnTradeHistory?market=%s_%s&start=%d&end=%d&sort=asc&count=100%s' % (
-                        first, second,
-                        time.mktime(((2017, 11, 22, 0, 0, 0, 0, 0, 0))),
-                        time.mktime(dt.datetime.now().timetuple()),
-                        cursor_string)
-                    response = requests.get(request_raw)
-                    self.raw_data = response.json()
-                    if (len(self.raw_data) == 0): break
-                    for entry in self.raw_data:
-                        self.dates.append(entry['date'])
-                        self.prices.append(float(entry['price']))
-                        self.seller_fees.append(float(entry['sellerFee']))
-                        self.buyer_fees.append(float(entry['buyerFee']))
-                        self.gas_fees.append(float(entry['gasFee']))
-                        self.usd_values.append(float(entry['usdValue']))
-                    print('Page ' + str(page) + ' - ' + cursor_string)
-                    cursor_string = '&cursor=' + response.headers['idex-next-cursor']
-                    page += 1
+            return self.downloaded_data()
+
+    def downloaded_data(self):
+        try:
+            #'2017-11-22'
+            cursor_string = ''
+            page = 0
+            print('Starting to download...')
+            while (True):
+                request_raw = 'https://api.idex.market/returnTradeHistory?market=%s_%s&start=%d&end=%d&sort=asc&count=100%s' % (
+                    first, second,
+                    time.mktime(((2017, 11, 22, 0, 0, 0, 0, 0, 0))),
+                    time.mktime(dt.datetime.now().timetuple()),
+                    cursor_string)
+                response = requests.get(request_raw)
+                self.raw_data = response.json()
+                if (len(self.raw_data) == 0): break
+                for entry in self.raw_data:
+                    self.dates.append(entry['date'])
+                    self.prices.append(float(entry['price']))
+                    self.seller_fees.append(float(entry['sellerFee']))
+                    self.buyer_fees.append(float(entry['buyerFee']))
+                    self.gas_fees.append(float(entry['gasFee']))
+                    self.usd_values.append(float(entry['usdValue']))
+                print('Page ' + str(page) + ' - ' + cursor_string)
+                cursor_string = '&cursor=' + response.headers['idex-next-cursor']
+                page += 1
                 
-                self.composed_data = {'dates': self.dates, 'prices': self.prices,
+            self.composed_data = {'dates': self.dates, 'prices': self.prices,
                                  'seller_fees': self.seller_fees, 'buyer_fees': self.buyer_fees,
                                  'gas_fees': self.gas_fees, 'usd_values': self.usd_values}
-                self.main_data = pd.DataFrame(data=self.composed_data)
-                self.main_data['dates'] = pd.to_datetime(self.main_data['dates'], format='%Y-%m-%d %H:%M:%S', yearfirst=True, errors='ignore')
-                return self.main_data
-            except requests.exceptions.ConnectTimeout:
-                print('Oops. Connection timeout occured!')
+            self.main_data = pd.DataFrame(data=self.composed_data)
+            self.main_data['dates'] = pd.to_datetime(self.main_data['dates'], format='%Y-%m-%d %H:%M:%S', yearfirst=True, errors='ignore')
+            return self.main_data
+        except requests.exceptions.ConnectTimeout:
+            print('Oops. Connection timeout occured!')
 
     def load_to_file(self):
             print('Writing to file...')
