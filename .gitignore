@@ -104,4 +104,4 @@ venv.bak/
 .mypy_cache/
 
 # Ethereum data
-full_idex_eth_aura_data.csv
+full_idex_data.csv

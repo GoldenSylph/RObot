@@ -22,7 +22,7 @@ class DataProvider:
         self.gas_fees = []
         self.usd_values = []
         self.composed_data = {}
-        self.data_file_name = 'full_idex_eth_aura_data.csv'
+        self.data_file_name = 'full_idex_data.csv'
 
     def get_main_data(self, first='ETH', second='AURA', force_update=False, from_file=False):
         
