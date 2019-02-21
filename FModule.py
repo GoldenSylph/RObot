@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split
 import calendar
 import time
 from API import Initable
+from DataFinderModule import DataProvider
 
 class ProbabilityModel(Initable):
 
@@ -18,8 +19,8 @@ class ProbabilityModel(Initable):
     without_time = '%Y-%m-%d'
     seed = 42
     part = 0.33
-    data_file_name = 'full_idex_eth_aura_data.csv'
-    
+    data_file_name = 'full_idex_data.csv'
+
     def __init__(self):
         sns.set(font_scale=1.2)
 
@@ -57,12 +58,12 @@ class ProbabilityModel(Initable):
            pr_content.append([index, value])
         kmeans = KMeans(n_clusters=10).fit(pr_content)
         tmp_main_data['cluster'] = kmeans.fit_predict(pr_content)
-        
+
     def show_barh(self, tmp_main_data):
         prepare_kmeans(tmp_main_data)
         tmp_main_data['cluster'].value_counts().plot(kind='barh')
         plt.show()
-        
+
 
     def show_joint_plot(self, tmp_main_data):
         prepare_kmeans(tmp_main_data)
@@ -115,9 +116,20 @@ class ProbabilityModel(Initable):
 
     def init_model(self):
         print('init model')
+        self.cached_data = self.data_provider.get_main_data(from_file=True)
 
     def start_updating_data(self):
         print('start updating data')
+        self.data_provider = DataProvider(debug=True)
+
+    def prepare_data(self, tmp_data):
+        low_high_data = []
+        for i in range(0, len(main_data['dates']) - 2):
+            low_high_data.append(abs(tmp_data['prices'][i] - tmp_data['prices'][i + 1]))
+        low_high_data.append(0)
+        print(low_high_data)
+        #Протестить в рантайме
+        #tmp_data['action'] = low_high_data
 
     def initialize(self):
         self.start_updating_data()
@@ -125,30 +137,30 @@ class ProbabilityModel(Initable):
 
     def get_probability(self, time, high, low):
         print('Getting probability - ' + str(time) + ' - ' + str(high) + ', ' + str(low))
-    
+
     def demonstrate(self):
         main_data = pd.read_csv(data_file_name)
         self.prepare_c3(main_data)
-        
+
         main_data['dates'] = self.dates_to_datetime(main_data, with_time)
         main_data['dates'] = main_data['dates'].apply(lambda x: x.timestamp())
 
         X, y = main_data[['dates']], main_data['action']
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=part, random_state=seed)
-        
+
         rfc = RandomForestClassifier(random_state=seed).fit(X_train, y_train)
 
         print(rfc.predict_proba([[time.time()]]))
-        
+
         rfc_results = rfc.predict_proba(X_test)
 
         print(rfc.score(X_test, y_test))
 
         rfc_data = pd.DataFrame(data=rfc_results, columns=['-1', '0', '1'])
         rfc_data['dates'] = X_test['dates']
-                
+
         view_data = rfc_data
-        
+
         sns.relplot(x='dates', y='-1', hue='gpc_rfc', data=view_data)
         plt.show()
 
@@ -157,5 +169,3 @@ class ProbabilityModel(Initable):
 
         sns.relplot(x='dates', y='0', hue='gpc_rfc', data=view_data)
         plt.show()
-
-    

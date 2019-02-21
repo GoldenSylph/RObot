@@ -44,18 +44,25 @@ class DataProvider:
         if not force_update:
             if from_file:
                 if not os.path.isfile('./' + self.data_file_name):
-                    self.start_to_download()
+                    print('File not found. Loading...')
+                    self.downloaded_data(first, second)
+                    print('Saving to file...')
                     self.load_to_file()
+                print('Reading...')
                 self.main_data = pd.read_csv(self.data_file_name)
+                print('Done reading...')
                 return self.main_data
             elif not self.main_data.empty:
+                print('Found cached version...')
                 return self.main_data
             else:
-                return self.downloaded_data()
-        else: 
-            return self.downloaded_data()
+                print('Force update accepted...')
+                return self.downloaded_data(first, second)
+        else:
+            print('Force update accepted...')
+            return self.downloaded_data(first, second)
 
-    def downloaded_data(self):
+    def downloaded_data(self, first, second):
         try:
             #'2017-11-22'
             cursor_string = ''
@@ -99,10 +106,11 @@ class DataProvider:
         self.get_main_data(force_update=True)
         self.load_to_file()
 
-    def __init__(self):
+    def __init__(self, debug):
         sns.set(font_scale=1.2)
-        self.scheduler = BackgroundScheduler()
-        self.scheduler.scheduled_job(self.cache_weekly, 'interval', weeks=1)
-        self.scheduler.start()
+        if not debug:
+            self.scheduler = BackgroundScheduler()
+            self.scheduler.scheduled_job(self.cache_weekly, 'interval', weeks=1)
+            self.scheduler.start()
             
         
