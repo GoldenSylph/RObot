@@ -4,7 +4,7 @@ class Unimplementable:
 
     def unimplemented(self, func_name):
         print(str(type(self)) + ': ' + func_name + ' is not yet implemented')
-        pass
+        raise
 
 class Initable(Unimplementable):
 

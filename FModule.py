@@ -11,18 +11,24 @@ from sklearn.model_selection import train_test_split
 import calendar
 import time
 from API import Initable
-from DataFinderModule import DataProvider
+from TradeHistoryFetcherModule import DataProvider
 
 class ProbabilityModel(Initable):
+
+    def init_model(self):
+
+    def start_updating_data(self):
+
+    def get_probability(self, time, high, low):
+        print('Getting probability - ' + str(time) + ' - ' + str(high) + ', ' + str(low))
+
+class TradeHistoryAnalysisModel(Initable):
 
     with_time = '%Y-%m-%d %H:%M:%S'
     without_time = '%Y-%m-%d'
     seed = 42
     part = 0.33
-    data_file_name = 'full_idex_data.csv'
-
-    def __init__(self):
-        sns.set(font_scale=1.2)
+    data_file_name = 'full_trade_idex_data.csv'
 
     def dates_to_datetime(self, data, format):
         return pd.to_datetime(data['dates'], format=format, yearfirst=True, errors='ignore')
@@ -122,21 +128,10 @@ class ProbabilityModel(Initable):
         print('start updating data')
         self.data_provider = DataProvider(debug=True)
 
-    def prepare_data(self, tmp_data):
-        low_high_data = []
-        for i in range(0, len(main_data['dates']) - 2):
-            low_high_data.append(abs(tmp_data['prices'][i] - tmp_data['prices'][i + 1]))
-        low_high_data.append(0)
-        print(low_high_data)
-        #Протестить в рантайме
-        #tmp_data['action'] = low_high_data
-
     def initialize(self):
-        self.start_updating_data()
-        self.init_model()
-
-    def get_probability(self, time, high, low):
-        print('Getting probability - ' + str(time) + ' - ' + str(high) + ', ' + str(low))
+        pass
+        #self.start_updating_data()
+        #self.init_model()
 
     def demonstrate(self):
         main_data = pd.read_csv(data_file_name)
@@ -169,3 +164,6 @@ class ProbabilityModel(Initable):
 
         sns.relplot(x='dates', y='0', hue='gpc_rfc', data=view_data)
         plt.show()
+
+if __name__ == '__main__':
+    sns.set(font_scale=1.2)

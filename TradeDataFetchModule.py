@@ -7,7 +7,7 @@ from datetime import timedelta
 import calendar
 import time
 import os
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.Background import BackgroundScheduler
 
 
 class DataProvider:
@@ -22,10 +22,10 @@ class DataProvider:
         self.gas_fees = []
         self.usd_values = []
         self.composed_data = {}
-        self.data_file_name = 'full_idex_data.csv'
+        self.data_file_name = 'full_idex_trade_data.csv'
 
     def get_main_data(self, first='ETH', second='AURA', force_update=False, from_file=False):
-        
+
         try:
             self.main_data
             self.raw_data
@@ -40,7 +40,7 @@ class DataProvider:
         except AttributeError:
             self.init_data_structs()
             force_update = True
-    
+
         if not force_update:
             if from_file:
                 if not os.path.isfile('./' + self.data_file_name):
@@ -87,7 +87,7 @@ class DataProvider:
                 print('Page ' + str(page) + ' - ' + cursor_string)
                 cursor_string = '&cursor=' + response.headers['idex-next-cursor']
                 page += 1
-                
+
             self.composed_data = {'dates': self.dates, 'prices': self.prices,
                                  'seller_fees': self.seller_fees, 'buyer_fees': self.buyer_fees,
                                  'gas_fees': self.gas_fees, 'usd_values': self.usd_values}
@@ -106,11 +106,9 @@ class DataProvider:
         self.get_main_data(force_update=True)
         self.load_to_file()
 
-    def __init__(self, debug):
+    def __init__(self, debug=True):
         sns.set(font_scale=1.2)
         if not debug:
             self.scheduler = BackgroundScheduler()
-            self.scheduler.scheduled_job(self.cache_weekly, 'interval', weeks=1)
+            self.scheduler.add_job(self.cache_weekly, 'interval', weeks=1)
             self.scheduler.start()
-            
-        
