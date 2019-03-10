@@ -7,7 +7,7 @@ from datetime import timedelta
 import calendar
 import time
 import os
-from apscheduler.schedulers.Background import BackgroundScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 class DataProvider:

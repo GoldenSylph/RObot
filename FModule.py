@@ -11,13 +11,82 @@ from sklearn.model_selection import train_test_split
 import calendar
 import time
 from API import Initable
-from TradeHistoryFetcherModule import DataProvider
+from TradeDataFetchModule import DataProvider
 
 class ProbabilityModel(Initable):
 
+# x1 = time, x2 = low, x3 = high, y = last
+
+    def init_filename(self):
+        self.folder = './data/'
+        self.seconds_filename = self.folder + 'seconds.csv'
+        self.minutes_filename = self.folder + 'minutes.csv'
+        self.hours_filename = self.folder + 'hours.csv'
+        self.daily_filename = self.folder + 'daily.csv'
+        self.weeks_filename = self.folder + 'weeks.csv'
+        self.months_filename = self.folder + 'months.csv'
+
+    def init_signatures(self):
+        self.main_signature = ['last', 'high', 'low', 'second', 'minute', 'hour', 'week_day', 'week_number', 'month']
+
+    def bootstrap(self):
+        pass
+
+    def init_main_data(self):
+        self.main_seconds_data = self.raw_seconds_data[self.main_signature]
+        self.main_minutes_data = self.raw_minutes_data[self.main_signature]
+        self.main_hours_data = self.raw_hours_data[self.main_signature]
+        self.main_daily_data = self.raw_daily_data[self.main_signature]
+        self.main_weeks_data = self.raw_weeks_data[self.main_signature]
+        self.main_months_data = self.raw_months_data[self.main_signature]
+
+    def init_raw_data(self):
+        self.raw_seconds_data = pd.read_csv(self.seconds_filename)
+        self.raw_minutes_data = pd.read_csv(self.minutes_filename)
+        self.raw_hours_data = pd.read_csv(self.hours_filename)
+        self.raw_daily_data = pd.read_csv(self.daily_filename)
+        self.raw_weeks_data = pd.read_csv(self.weeks_filename)
+        self.raw_months_data = pd.read_csv(self.months_filename)
+        
+
+    def init_daily_model(self):
+
+        ##FOR ALL TYPES OF DATA
+        self.daily_part = 0.5
+        self.X_daily, self.y_daily = self.main_daily_data[['time', 'low', 'high']], self.main_daily_data['last']
+        self.X_daily_train, self.X_daily_test, self.y_daily_train, self.y_daily_test = train_test_split(self.X_daily,
+                                                                                        self.y_daily, test_size=self.daily_part)
+        self.daily_rfc = RandomForestClassifier().fit(X_daily_train, y_daily_train)
+
+    def init_minutes_model(self):
+        self.minutes_part = 0.5
+        self.X_minutes, self.y_minutes = self.main_minutes_data[['time', 'low', 'high']], self.main_minutes_data['last']
+        self.X_minutes_train, self.X_minutes_test, self.y_minutes_train, self.y_minutes_test = train_test_split(self.X_minutes,
+                                                                                        self.y_minutes, test_size=self.minutes_part)
+        self.minutes_rfc = RandomForestClassifier().fit(X_minutes_train, y_minutes_train)
+
+    def init_weeks_model(self):
+        self.weeks_part = 0.5
+        self.X_weeks, self.y_weeks = self.main_weeks_data[['time', 'low', 'high']], self.main_weeks_data['last']
+        self.X_weeks_train, self.X_weeks_test, self.y_weeks_train, self.y_weeks_test = train_test_split(self.X_weeks,
+                                                                                        self.y_weeks, test_size=self.weeks_part)
+        self.weeks_rfc = RandomForestClassifier().fit(X_weeks_train, y_weeks_train)
+    
     def init_model(self):
+        self.init_filename()
+        self.init_raw_data()
+        self.init_main_data()
+        self.bootstrap()
+        self.init_minutes_model()
+        self.init_daily_model()
+        self.init_weeks_model()
 
     def start_updating_data(self):
+        pass
+
+    def initialize(self):
+        self.init_model()
+        self.start_updating_data()
 
     def get_probability(self, time, high, low):
         print('Getting probability - ' + str(time) + ' - ' + str(high) + ', ' + str(low))
@@ -128,13 +197,8 @@ class TradeHistoryAnalysisModel(Initable):
         print('start updating data')
         self.data_provider = DataProvider(debug=True)
 
-    def initialize(self):
-        pass
-        #self.start_updating_data()
-        #self.init_model()
-
     def demonstrate(self):
-        main_data = pd.read_csv(data_file_name)
+        main_data = pd.read_csv(self.data_file_name)
         self.prepare_c3(main_data)
 
         main_data['dates'] = self.dates_to_datetime(main_data, with_time)
@@ -143,7 +207,7 @@ class TradeHistoryAnalysisModel(Initable):
         X, y = main_data[['dates']], main_data['action']
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=part, random_state=seed)
 
-        rfc = RandomForestClassifier(random_state=seed).fit(X_train, y_train)
+        rfc = RandomForestClassifier().fit(X_train, y_train)
 
         print(rfc.predict_proba([[time.time()]]))
 
