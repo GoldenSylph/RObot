@@ -4,9 +4,16 @@ import datetime as dt
 import os
 import time
 
+from math import ceil
 from apscheduler.schedulers.blocking import BlockingScheduler 
 
 class DataFetcher:
+
+    def week_of_month(self, date):
+        first_day = date.replace(day=1)
+        dom = date.day
+        adjusted_dom = dom + first_day.weekday()
+        return int(ceil(adjusted_dom / 7.0))
 
     def load_price_data(self, filename, init=False):
         request_raw = 'https://api.idex.market/returnTicker?market=%s_%s' % (self.first, self.second)
@@ -37,7 +44,8 @@ class DataFetcher:
                                         + ',' + str(timetuple[6])
                                         + ',' + str(timetuple[1])
                                         + ',' + str(timetuple[3])
-                                        + ',' + str(datetime.date(timetuple[0], timetuple[1], timetuple[2]).isocalendar()[1]) + '\n')
+                                        + ',' + str(self.week_of_month(dt.date(timetuple[0], timetuple[1], timetuple[2])))
+                                        + '\n')
                     f.close()
             
 
@@ -92,12 +100,12 @@ class DataFetcher:
         print('Environment set...')
         if not debug:
             self.scheduler = BlockingScheduler()
-            self.scheduler.add_job(self.load_price_data_daily, 'interval', days=1)
-            self.scheduler.add_job(self.load_price_data_minutes, 'interval', minutes=1)
-            self.scheduler.add_job(self.load_price_data_weeks, 'interval', weeks=1)
-            self.scheduler.add_job(self.load_price_data_months, 'interval', weeks=4)
-            self.scheduler.add_job(self.load_price_data_hours, 'interval', hours=1)
-            self.scheduler.add_job(self.load_price_data_seconds, 'interval', seconds=1)
+            self.scheduler.add_job(self.load_price_data_daily, 'cron', day='*')
+            self.scheduler.add_job(self.load_price_data_minutes, 'cron', minute='*')
+            self.scheduler.add_job(self.load_price_data_weeks, 'cron', week='*')
+            self.scheduler.add_job(self.load_price_data_months, 'cron', month='*')
+            self.scheduler.add_job(self.load_price_data_hours, 'cron', hour='*')
+            self.scheduler.add_job(self.load_price_data_seconds, 'cron', second='*')
             print('Start the jobs...')
             self.scheduler.start()
 
