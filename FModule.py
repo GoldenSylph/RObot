@@ -1,23 +1,21 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.gaussian_process.kernels import Matern
-from sklearn.cluster import KMeans
-import seaborn as sns
 import datetime as dt
-from datetime import timedelta
-from sklearn.model_selection import train_test_split
 import calendar
 import time
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 from API import Initable
-from TradeDataFetchModule import DataProvider
+from apscheduler.schedulers.background import BackgroundScheduler
+from sklearn.svm import SVR
 
 class ProbabilityModel(Initable):
 
-# x1 = time, x2 = low, x3 = high, y = last
+    # x1 = times, x2 = low, x3 = high, y = last
 
     def init_filename(self):
+        print('Initialization of filenames...')
         self.folder = './data/'
         self.seconds_filename = self.folder + 'seconds.csv'
         self.minutes_filename = self.folder + 'minutes.csv'
@@ -27,12 +25,16 @@ class ProbabilityModel(Initable):
         self.months_filename = self.folder + 'months.csv'
 
     def init_signatures(self):
+        print('Initalization of filters and signatures...')
         self.main_signature = ['last', 'high', 'low', 'second', 'minute', 'hour', 'week_day', 'week_number', 'month']
+        self.arguments_signature = ['high', 'low', 'second', 'minute', 'hour', 'week_day', 'week_number', 'month']
+        self.result_signature = 'last'
 
     def bootstrap(self):
-        pass
+        print('Bootstraping...')
 
     def init_main_data(self):
+        print('Initalization of main data...')
         self.main_seconds_data = self.raw_seconds_data[self.main_signature]
         self.main_minutes_data = self.raw_minutes_data[self.main_signature]
         self.main_hours_data = self.raw_hours_data[self.main_signature]
@@ -41,193 +43,113 @@ class ProbabilityModel(Initable):
         self.main_months_data = self.raw_months_data[self.main_signature]
 
     def init_raw_data(self):
+        print('Loading the raw data...')
         self.raw_seconds_data = pd.read_csv(self.seconds_filename)
         self.raw_minutes_data = pd.read_csv(self.minutes_filename)
         self.raw_hours_data = pd.read_csv(self.hours_filename)
         self.raw_daily_data = pd.read_csv(self.daily_filename)
         self.raw_weeks_data = pd.read_csv(self.weeks_filename)
         self.raw_months_data = pd.read_csv(self.months_filename)
-        
 
-    def init_daily_model(self):
-
-        ##FOR ALL TYPES OF DATA
+    def init_test_data_parts(self):
+        print('Initialization of test data parts...')
+        self.seconds_part = 0.5
+        self.minutes_part = 0.5
+        self.hours_part = 0.5
         self.daily_part = 0.5
-        self.X_daily, self.y_daily = self.main_daily_data[['time', 'low', 'high']], self.main_daily_data['last']
-        self.X_daily_train, self.X_daily_test, self.y_daily_train, self.y_daily_test = train_test_split(self.X_daily,
-                                                                                        self.y_daily, test_size=self.daily_part)
-        self.daily_rfc = RandomForestClassifier().fit(X_daily_train, y_daily_train)
+        self.weeks_part = 0.5
+        self.months_part = 0.5
+
+    def init_seconds_model(self):
+        print('Initialization of seconds classifier...')
+        self.X_seconds, self.y_seconds = self.main_seconds_data[self.arguments_signature], self.main_seconds_data[self.result_signature]
+        self.X_seconds_train, self.X_seconds_test, self.y_seconds_train, self.y_seconds_test = train_test_split(self.X_seconds,
+                                                                                        self.y_seconds, test_size=self.seconds_part)
+        self.seconds_rfc = RandomForestClassifier(criterion='entropy').fit(X_seconds_train, y_seconds_train)
 
     def init_minutes_model(self):
-        self.minutes_part = 0.5
-        self.X_minutes, self.y_minutes = self.main_minutes_data[['time', 'low', 'high']], self.main_minutes_data['last']
+        print('Initialization of minutes classifier...')
+        self.X_minutes, self.y_minutes = self.main_minutes_data[self.arguments_signature], self.main_minutes_data[self.result_signature]
         self.X_minutes_train, self.X_minutes_test, self.y_minutes_train, self.y_minutes_test = train_test_split(self.X_minutes,
                                                                                         self.y_minutes, test_size=self.minutes_part)
-        self.minutes_rfc = RandomForestClassifier().fit(X_minutes_train, y_minutes_train)
+        self.minutes_rfc = RandomForestClassifier(criterion='entropy').fit(X_minutes_train, y_minutes_train)
+
+    def init_hours_model(self):
+        print('Initialization of hours classifier...')
+        self.X_hours, self.y_hours = self.main_hours_data[self.arguments_signature], self.main_hours_data[self.result_signature]
+        self.X_hours_train, self.X_hours_test, self.y_hours_train, self.y_hours_test = train_test_split(self.X_hours,
+                                                                                        self.y_hours, test_size=self.hours_part)
+        self.hours_rfc = RandomForestClassifier(criterion='entropy').fit(X_hours_train, y_hours_train)
+
+    def init_daily_model(self):
+        print('Initialization of days classifier...')
+        self.X_daily, self.y_daily = self.main_daily_data[self.arguments_signature], self.main_daily_data[self.result_signature]
+        self.X_daily_train, self.X_daily_test, self.y_daily_train, self.y_daily_test = train_test_split(self.X_daily,
+                                                                                        self.y_daily, test_size=self.daily_part)
+        self.daily_rfc = RandomForestClassifier(criterion='entropy').fit(X_daily_train, y_daily_train)
 
     def init_weeks_model(self):
-        self.weeks_part = 0.5
-        self.X_weeks, self.y_weeks = self.main_weeks_data[['time', 'low', 'high']], self.main_weeks_data['last']
+        print('Initialization of weeks classifier...')
+        self.X_weeks, self.y_weeks = self.main_weeks_data[self.arguments_signature], self.main_weeks_data[self.result_signature]
         self.X_weeks_train, self.X_weeks_test, self.y_weeks_train, self.y_weeks_test = train_test_split(self.X_weeks,
                                                                                         self.y_weeks, test_size=self.weeks_part)
-        self.weeks_rfc = RandomForestClassifier().fit(X_weeks_train, y_weeks_train)
+        self.weeks_rfc = RandomForestClassifier(criterion='entropy').fit(X_weeks_train, y_weeks_train)
+
+    def init_months_model(self):
+        print('Initialization of months classifier...')
+        self.X_months, self.y_months = self.main_months_data[self.arguments_signature], self.main_months_data[self.result_signature]
+        self.X_months_train, self.X_months_test, self.y_months_train, self.y_months_test = train_test_split(self.X_months,
+                                                                                        self.y_months, test_size=self.months_part)
+        self.months_rfc = RandomForestClassifier(criterion='entropy').fit(X_months_train, y_months_train)
+
+    def init_svr_model(self):
+        self.aggregated_rfc_x = self.X_seconds_train.append([self.X_minutes_train, self.X_hours_train,
+                                                             self.X_daily_train, self.X_weeks_train, self.X_months_train])
+        self.aggregated_rfc_y = self.y_seconds_train.append([self.y_minutes_train, self.y_hours_train,
+                                                             self.y_daily_train, self.y_weeks_train, self.y_months_train])
+        self.svr_rbf = SVR(kernel='rbf', C=100, gamma=0.1, epsilon=.1).fit(self.aggregated_train_rfc_x, self.aggregated_train_rfc_y)
     
     def init_model(self):
+        print('Initialization of model...')
+        self.init_signatures()
         self.init_filename()
+        self.init_test_data_parts()
+        self.reinit_specific_models()
+
+    def reinit_specific_models(self):
+        print('Reinit specific models begins...')
         self.init_raw_data()
         self.init_main_data()
         self.bootstrap()
+        self.init_seconds_model()
         self.init_minutes_model()
+        self.init_hours_model()
         self.init_daily_model()
         self.init_weeks_model()
+        self.init_months_model()
+        self.init_svr_model()
+        print('Reinit specific models complete...')
 
     def start_updating_data(self):
-        pass
-
+        self.scheduler = BackgroundScheduler()
+        self.scheduler.add_job(self.reinit_specific_models, 'cron', week='*')
+        print('Start updating data job...')
+        self.scheduler.start()
+            
     def initialize(self):
+        print('Initialization in progress...')
         self.init_model()
         self.start_updating_data()
+        print('Probability module is ready to work. Standby...')
 
-    def get_probability(self, time, high, low):
-        print('Getting probability - ' + str(time) + ' - ' + str(high) + ', ' + str(low))
-
-class TradeHistoryAnalysisModel(Initable):
-
-    with_time = '%Y-%m-%d %H:%M:%S'
-    without_time = '%Y-%m-%d'
-    seed = 42
-    part = 0.33
-    data_file_name = 'full_trade_idex_data.csv'
-
-    def dates_to_datetime(self, data, format):
-        return pd.to_datetime(data['dates'], format=format, yearfirst=True, errors='ignore')
-
-    def reduced_mean(self, data, p):
-        result = 0
-        n = len(data)
-        for i in range(p + 1, n - p):
-            result += data[i]
-        result /= n - 2 * p
-        return result
-
-    def show_box(self, box_data):
-        box_data['dates'] = box_data['dates'].apply(lambda x: x[0:10])
-        box_data_head = box_data.head(3000)
-        sns.boxplot(x='dates', y='prices', data=box_data_head)
-        plt.xticks(rotation = 45)
-        plt.show()
-
-    def show_hist(self, tmp_main_data):
-        fr_data = tmp_main_data['prices'].value_counts()
-        fr_data.plot(kind='hist')
-        plt.show()
-
-    def show_density(self, tmp_main_data):
-        fr_data = tmp_main_data['prices'].value_counts()
-        fr_data.plot(kind='density')
-        plt.show()
-
-    def prepare_kmeans(self, tmp_main_data):
-        pr_content = []
-        for (index, value) in tmp_main_data['prices'].iteritems():
-           pr_content.append([index, value])
-        kmeans = KMeans(n_clusters=10).fit(pr_content)
-        tmp_main_data['cluster'] = kmeans.fit_predict(pr_content)
-
-    def show_barh(self, tmp_main_data):
-        prepare_kmeans(tmp_main_data)
-        tmp_main_data['cluster'].value_counts().plot(kind='barh')
-        plt.show()
-
-
-    def show_joint_plot(self, tmp_main_data):
-        prepare_kmeans(tmp_main_data)
-        sns.jointplot(tmp_data['cluster'], tmp_data['prices'], kind="kde", height=7, space=0)
-        plt.show()
-
-    def show_heatmap(self, tmp_main_data):
-        prepare_kmeans(tmp_main_data)
-        sns.heatmap(tmp_main_data['cluster'].value_counts().to_frame(), annot=True)
-        plt.show()
-
-    def show_violin(self, vio_data):
-        vio_data['dates'] = vio_data['dates'].apply(lambda x: x[0:10])
-        vio_data_head = vio_data.head(3000)
-        sns.violinplot(x='dates', y='prices', data=vio_data_head)
-        plt.xticks(rotation = 45)
-        plt.show()
-
-    def prepare_c3(self, tmp_main_data):
-        low_high_data = []
-        for i in range(0, len(main_data['dates']) - 1):
-            if (tmp_main_data['prices'][i] > tmp_main_data['prices'][i + 1]):
-                low_high_data.append(1)
-            elif (tmp_main_data['prices'][i] < tmp_main_data['prices'][i + 1]):
-                low_high_data.append(-1)
-            else:
-                low_high_data.append(0)
-        low_high_data.append(0)
-        tmp_main_data['action'] = low_high_data
-
-    def show_c3_hist(self, tmp_main_data):
-        self.prepare_c3(tmp_main_data)
-        tmp_main_data['action'].plot(kind='hist')
-        plt.show()
-
-    def show_statistics(self, main_data):
-        max_price = main_data['prices'].max()
-        min_price = main_data['prices'].min()
-        describe_price = main_data['prices'].describe()
-        print('Statistics: ')
-        print(describe_price)
-        print('Reduced mean - ' + str(self.reduced_mean(main_data['prices'], 10000)))
-        print('Mode - ' + str(main_data['prices'].mode()))
-        print('Mean absolute deviation - ' + str(main_data['prices'].mad()))
-        print('Range - ' + str(max_price - min_price))
-
-    def get_dispersion(self, main_data):
-        t_std = main_data['prices'].std()
-        return t_std * t_std
-
-    def init_model(self):
-        print('init model')
-        self.cached_data = self.data_provider.get_main_data(from_file=True)
-
-    def start_updating_data(self):
-        print('start updating data')
-        self.data_provider = DataProvider(debug=True)
-
-    def demonstrate(self):
-        main_data = pd.read_csv(self.data_file_name)
-        self.prepare_c3(main_data)
-
-        main_data['dates'] = self.dates_to_datetime(main_data, with_time)
-        main_data['dates'] = main_data['dates'].apply(lambda x: x.timestamp())
-
-        X, y = main_data[['dates']], main_data['action']
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=part, random_state=seed)
-
-        rfc = RandomForestClassifier().fit(X_train, y_train)
-
-        print(rfc.predict_proba([[time.time()]]))
-
-        rfc_results = rfc.predict_proba(X_test)
-
-        print(rfc.score(X_test, y_test))
-
-        rfc_data = pd.DataFrame(data=rfc_results, columns=['-1', '0', '1'])
-        rfc_data['dates'] = X_test['dates']
-
-        view_data = rfc_data
-
-        sns.relplot(x='dates', y='-1', hue='gpc_rfc', data=view_data)
-        plt.show()
-
-        sns.relplot(x='dates', y='1', hue='gpc_rfc', data=view_data)
-        plt.show()
-
-        sns.relplot(x='dates', y='0', hue='gpc_rfc', data=view_data)
-        plt.show()
-
-if __name__ == '__main__':
-    sns.set(font_scale=1.2)
+    def get_probability(self, high, low, second, minute, hour, week_day, week_number, month):
+        print('Probability requested: High(%s), Low(%s), Second(%s), Minute(%s), Hour(%s), WeekDay(%s), WeekNumber(%s), Month(%s)' %
+              (str(high), str(low), str(second), str(minute), str(hour), str(week_day), str(week_number), str(month)))
+        argument = [[high, low, second, minute, hour, week_day, week_number, month]]
+        y_sec = self.seconds_rfc.predict(argument)
+        y_min = self.minutes_rfc.predict(argument)
+        y_hour = self.hours_rfc.predict(argument)
+        y_day = self.daily_rfc.predict(argument)
+        y_week = self.weeks_rfc.predict(argument)
+        y_month = self.months_rfc.predict(argument)
+        

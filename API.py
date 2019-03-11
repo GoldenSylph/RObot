@@ -3,7 +3,7 @@ import pandas as pd
 class Unimplementable:
 
     def unimplemented(self, func_name):
-        print(str(type(self)) + ': ' + func_name + ' is not yet implemented')
+        print(str(type(self)) + ': ' + func_name + ' is not yet implemented!')
         raise
 
 class Initable(Unimplementable):
@@ -39,8 +39,8 @@ class Facade(Unimplementable):
         for key, value in self.models.items():
             value.initialize()
 
-    def get_probability(self, time, high, low):
-        return self.models['probability_module'].get_probability(time, high, low)
+    def get_probability(self, high, low, second, minute, hour, week_day, week_number, month):
+        return self.models['probability_module'].get_probability(high, low, second, minute, hour, week_day, week_number, month)
 
     def get_cost(self, time):
         self.unimplemented(self.get_cost.__name__)
