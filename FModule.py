@@ -1,4 +1,4 @@
-import pandas as pd
+ import pandas as pd
 import numpy as np
 import datetime as dt
 import calendar
@@ -12,7 +12,7 @@ from sklearn.svm import SVR
 
 class ProbabilityModel(Initable):
 
-    # x1 = times, x2 = low, x3 = high, y = last
+    # x1 = cycle times, x2 = low, x3 = high, y = last, timestamp
 
     def init_filename(self):
         print('Initialization of filenames...')
@@ -27,20 +27,21 @@ class ProbabilityModel(Initable):
     def init_signatures(self):
         print('Initalization of filters and signatures...')
         self.main_signature = ['last', 'high', 'low', 'second', 'minute', 'hour', 'week_day', 'week_number', 'month']
+        self.main_signature_with_time = ['last', 'high', 'low', 'second', 'minute', 'hour', 'week_day', 'week_number', 'month', 'time']
         self.arguments_signature = ['high', 'low', 'second', 'minute', 'hour', 'week_day', 'week_number', 'month']
-        self.result_signature = 'last'
+        self.result_signature = ['last', 'time']
 
     def bootstrap(self):
         print('Bootstraping...')
 
     def init_main_data(self):
         print('Initalization of main data...')
-        self.main_seconds_data = self.raw_seconds_data[self.main_signature]
-        self.main_minutes_data = self.raw_minutes_data[self.main_signature]
-        self.main_hours_data = self.raw_hours_data[self.main_signature]
-        self.main_daily_data = self.raw_daily_data[self.main_signature]
-        self.main_weeks_data = self.raw_weeks_data[self.main_signature]
-        self.main_months_data = self.raw_months_data[self.main_signature]
+        self.main_seconds_data = self.raw_seconds_data[self.main_signature_with_time]
+        self.main_minutes_data = self.raw_minutes_data[self.main_signature_with_time]
+        self.main_hours_data = self.raw_hours_data[self.main_signature_with_time]
+        self.main_daily_data = self.raw_daily_data[self.main_signature_with_time]
+        self.main_weeks_data = self.raw_weeks_data[self.main_signature_with_time]
+        self.main_months_data = self.raw_months_data[self.main_signature_with_time]
 
     def init_raw_data(self):
         print('Loading the raw data...')
@@ -103,10 +104,10 @@ class ProbabilityModel(Initable):
         self.months_rfc = RandomForestClassifier(criterion='entropy').fit(X_months_train, y_months_train)
 
     def init_svr_model(self):
-        self.aggregated_rfc_x = self.X_seconds_train.append([self.X_minutes_train, self.X_hours_train,
+        """self.aggregated_rfc_x = self.X_seconds_train.append([self.X_minutes_train, self.X_hours_train,
                                                              self.X_daily_train, self.X_weeks_train, self.X_months_train])
         self.aggregated_rfc_y = self.y_seconds_train.append([self.y_minutes_train, self.y_hours_train,
-                                                             self.y_daily_train, self.y_weeks_train, self.y_months_train])
+                                                             self.y_daily_train, self.y_weeks_train, self.y_months_train])"""
         self.svr_rbf = SVR(kernel='rbf', C=100, gamma=0.1, epsilon=.1).fit(self.aggregated_train_rfc_x, self.aggregated_train_rfc_y)
     
     def init_model(self):
