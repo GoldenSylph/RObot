@@ -193,7 +193,7 @@ class ProbabilityModel(Initable):
         svr_argument = [[time, high, low]]
         self.svr_rbf = self.get_svr_model(rfc_argument)
         result = self.svr_rbf.predict(svr_argument)
-        print(result)
+        print('Sending result: ' + str(result))
         return result
         """
         y_sec = self.seconds_rfc.predict(argument)
