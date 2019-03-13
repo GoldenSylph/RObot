@@ -24,13 +24,14 @@ class DataFetcher:
             if not os.path.isfile(path):
                 with open(path, 'a') as f:
                     os.utime(path, None)
-                    f.write(','.join(self.current_raw_data.keys()) + ',time,minute,week_day,month,hour,second,week_number\n')
+                    f.write(',' + ','.join(self.current_raw_data.keys()) + ',time,second,minute,hour,week_day,week_number,month\n')
                     f.close()
         else:
             with open(path, 'a+') as f:
                     os.utime(path, None)
                     timetuple = dt.datetime.now().timetuple()
-                    f.write(','
+                    self.current_count += 1
+                    f.write(str(self.current_count) + ',' + ','
                             .join([str(self.current_raw_data['last']),
                                    str(self.current_raw_data['high']),
                                    str(self.current_raw_data['low']),
@@ -40,11 +41,12 @@ class DataFetcher:
                                    str(self.current_raw_data['baseVolume']),
                                    str(self.current_raw_data['quoteVolume'])])
                                         + ',' + str(time.mktime(timetuple))
+                                        + ',' + str(timetuple[5])
                                         + ',' + str(timetuple[4])
-                                        + ',' + str(timetuple[6])
-                                        + ',' + str(timetuple[1])
                                         + ',' + str(timetuple[3])
+                                        + ',' + str(timetuple[6])
                                         + ',' + str(self.week_of_month(dt.date(timetuple[0], timetuple[1], timetuple[2])))
+                                        + ',' + str(timetuple[1])
                                         + '\n')
                     f.close()
             
@@ -94,6 +96,7 @@ class DataFetcher:
         self.load_price_data(self.seconds_filename, init=True)
         
     def __init__(self, debug=True):
+        self.current_count = -1
         self.initialize_first_and_second()
         self.initialize_filenames()
         self.initialize_files()
