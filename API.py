@@ -24,11 +24,11 @@ class DependencyInjector:
         models_description = pd.read_csv(file_name)
         models = {}
         for index, row in models_description.iterrows():
-            temp_model_name = row['model_name']
+            temp_model_name = row[1]
             if temp_model_name == 'not_installed':
                 continue
             model_class = self.model_import(temp_model_name)
-            models[row['module_name']] = model_class()
+            models[row[0]] = model_class()
         return models
 
 class Facade(Unimplementable):
