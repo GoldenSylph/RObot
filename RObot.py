@@ -67,7 +67,8 @@ class TelegramROBot:
             self.show_start_keyboard(bot, update)
             return MODELS_DECLARE
         bot.send_message(chat_id=update.message.chat_id,
-                         text="You used the LSTM model.")
+                         text="Acquiring the information from: LSTM model")
+        
         self.show_start_keyboard(bot, update)
         return MODELS_DECLARE
 
@@ -76,7 +77,16 @@ class TelegramROBot:
             self.show_start_keyboard(bot, update)
             return MODELS_DECLARE
         bot.send_message(chat_id=update.message.chat_id,
-                         text="You used the Random Forests and SVR model.")        
+                         text="Acquiring the information from: Random Forests and SVR model")
+        args = list(update.message.text.split(' '))
+        args[0] = float(args[0])
+        args[1] = float(args[1])
+        for i in range(2, 7):
+            args[i] = int(args[i])
+        args[8] = time.mktime(datetime.datetime.strptime(args[8], "%d/%m/%Y").timetuple())
+        result = self.facade.get_probability(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8])
+        bot.send_message(chat_id=update.message.chat_id,
+                         text="The predicted price is: %s" % str(result))
         self.show_start_keyboard(bot, update)
         return MODELS_DECLARE
 
