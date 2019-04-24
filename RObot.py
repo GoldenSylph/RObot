@@ -1,12 +1,13 @@
 import logging
-from telegram.ext import CommandHandler, Filters, Updater, MessageHandler
 import telegram
 import API
 import time
 import datetime
 import os
 import psycopg2
+
 from functools import wraps
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler, RegexHandler
 
 FIRST_MODEL_USE, SECOND_MODEL_USE, MODELS_DECLARE = range(3)
 
