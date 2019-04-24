@@ -1,1 +1,1 @@
-web: python -m git_lfs && python RObot.py
+web: python RObot.py

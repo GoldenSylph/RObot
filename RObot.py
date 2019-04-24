@@ -4,6 +4,9 @@ import telegram
 import API
 import time
 import datetime
+import os
+import psycopg2
+
 
 class TelegramROBot:
 
@@ -32,6 +35,11 @@ class TelegramROBot:
         self.updater.start_polling()
 
     def __init__(self):
+
+        
+        self.DATABASE_URL = ''
+
+        self.conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
         self.REQUEST_KWARGS={
             'proxy_url': 'socks5://110.49.101.58:1080'
