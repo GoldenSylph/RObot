@@ -21,7 +21,7 @@ class DependencyInjector:
         return mod
 
     def inject(self, file_name):
-        models_description = pd.read_csv(file_name)
+        models_description = pd.read_csv(file_name, encoding='utf-8')
         print('Model description loaded: %s' % str(models_description))
         models = {}
         for index, row in models_description.iterrows():
