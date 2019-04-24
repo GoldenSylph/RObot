@@ -18,7 +18,7 @@ def send_typing_action(func):
 
 class TelegramROBot:
 
-    #@send_typing_action
+    @send_typing_action
     def request(self, bot, update):
         bot.send_message(chat_id=update.message.chat_id, text="Interpretating...")
 
