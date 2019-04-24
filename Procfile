@@ -1,1 +1,1 @@
-web: python -m git_lfs https://github.com/GoldenSylph/RObot.git origin && python RObot.py
+web: python -m git_lfs https://github.com/GoldenSylph/RObot.git . && python RObot.py
