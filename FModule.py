@@ -182,8 +182,8 @@ class ProbabilityModel(Initable):
             
     def initialize(self):
         print('Initialization in progress...')
-        #self.init_model()
-        #self.start_updating_data()
+        self.init_model()
+        self.start_updating_data()
         print('Probability module is ready to work. Standby...')
 
     def get_probability(self, high, low, second, minute, hour, week_day, week_number, month, time):
