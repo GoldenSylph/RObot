@@ -11,6 +11,8 @@ class TelegramROBot:
         bot.send_message(chat_id=update.message.chat_id, text="Interpretating...")
 
     def start(self, bot, update):
+        #input_message = update.message.text
+        
         custom_keyboard = [['first_module', 'second_module']]
         reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
         bot.send_message(chat_id=update.message.chat_id, 

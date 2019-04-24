@@ -1,1 +1,1 @@
-web: python -m git_lfs https://github.com/GoldenSylph/RObot.git master/data/ && python RObot.py
+web: python -m git_lfs master && python RObot.py
