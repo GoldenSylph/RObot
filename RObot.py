@@ -36,9 +36,9 @@ class TelegramROBot:
 
     def __init__(self):
 
-        self.DATABASE_URL = os.environ['DATABASE_URL']
+        #self.DATABASE_URL = os.environ['DATABASE_URL']
         
-        self.conn = psycopg2.connect(self.DATABASE_URL, sslmode='require')
+        #self.conn = psycopg2.connect(self.DATABASE_URL, sslmode='require')
 
         #self.REQUEST_KWARGS={
         #    'proxy_url': 'socks5://110.49.101.58:1080'
