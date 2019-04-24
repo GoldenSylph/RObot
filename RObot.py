@@ -40,10 +40,10 @@ class TelegramROBot:
         #}
 
         self.start_handler = CommandHandler('start', self.start)        
-        self.request_handler = MessageHandler(Filters.command, self.request)
+        self.request_handler = MessageHandler(Filters.text, self.request)
 
         self.updater = Updater(token='742169188:AAExqFAHXxvhYp59d95SJlrg9n_hhZe0vuE')#, request_kwargs=self.REQUEST_KWARGS)
-        
+
         self.dispatcher = self.updater.dispatcher
         self.dispatcher.add_handler(self.start_handler)
         self.dispatcher.add_handler(self.request_handler)
