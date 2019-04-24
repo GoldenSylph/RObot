@@ -20,6 +20,13 @@ class TelegramROBot:
                  text="Or you can start over.", 
                  reply_markup=reply_markup)
 
+    def show_start_keyboard(self, bot, update):
+        custom_keyboard = [['Random Forests and SVM', 'LSTM']]
+        reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+        bot.send_message(chat_id=update.message.chat_id, 
+                 text="Please choose the function.", 
+                 reply_markup=reply_markup)
+
     def first_model_declare(self, bot, update):
         bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         time.sleep(1)
@@ -29,7 +36,7 @@ class TelegramROBot:
                          text="Please enter the arguments in format of:")
         bot.send_message(chat_id=update.message.chat_id,
                          text="<higher cost> <lower cost> <second> <minute> <hour> <week day number> <week number> <month number> <DD/MM/YY>")
-        show_start_over_keyboard(bot, update)
+        self.show_start_over_keyboard(bot, update)
         return FIRST_MODEL_USE
 
     def second_model_declare(self, bot, update):
@@ -41,7 +48,7 @@ class TelegramROBot:
                          text="Please enter the arguments in format of:")
         bot.send_message(chat_id=update.message.chat_id,
                          text="<DD/MM/YY> <hour> <minute> <second>")
-        show_start_over_keyboard(bot, update)
+        self.show_start_over_keyboard(bot, update)
         return SECOND_MODEL_USE
 
     def models_declare(self, bot, update):
@@ -56,13 +63,13 @@ class TelegramROBot:
     def second_model_use(self, bot, update):
         bot.send_message(chat_id=update.message.chat_id,
                          text="You used the LSTM model.")
-        show_start_over_keyboard(bot, update)
+        self.show_start_keyboard(bot, update)
         return MODELS_DECLARE
 
     def first_model_use(self, bot, update):
         bot.send_message(chat_id=update.message.chat_id,
                          text="You used the Random Forests and SVR model.")        
-        show_start_over_keyboard(bot, update)
+        self.show_start_keyboard(bot, update)
         return MODELS_DECLARE
 
     def error(self, bot, update):
@@ -74,11 +81,7 @@ class TelegramROBot:
         return ConversationHandler.END
 
     def start(self, bot, update):
-        custom_keyboard = [['Random Forests and SVM', 'LSTM']]
-        reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
-        bot.send_message(chat_id=update.message.chat_id, 
-                 text="Welcome! Please choose the function.", 
-                 reply_markup=reply_markup)
+        self.show_start_keyboard(bot, update)
         return MODELS_DECLARE
         
     #def get_cost_from_first(self, bot, update):
