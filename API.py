@@ -22,9 +22,9 @@ class DependencyInjector:
 
     def inject(self, file_name):
         models_description = pd.read_csv(file_name)
+        print(models_description)
         models = {}
         for index, row in models_description.iterrows():
-            print("Injecting row: \n%s" % str(len(row)))
             temp_model_name = row['model_name']
             if temp_model_name == 'not_installed':
                 continue
