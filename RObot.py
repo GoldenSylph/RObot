@@ -31,8 +31,10 @@ class TelegramROBot:
     def launch(self):
         self.facade = API.Facade()
         self.updater.start_polling()
+        self.updater.idle()
 
     def __init__(self):
+        
         #self.REQUEST_KWARGS={
         #    'proxy_url': 'socks5://110.49.101.58:1080'
         #}
