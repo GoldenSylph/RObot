@@ -40,14 +40,14 @@ class TelegramROBot:
         
         self.conn = psycopg2.connect(self.DATABASE_URL, sslmode='require')
 
-        self.REQUEST_KWARGS={
-            'proxy_url': 'socks5://110.49.101.58:1080'
-        }
+        #self.REQUEST_KWARGS={
+        #    'proxy_url': 'socks5://110.49.101.58:1080'
+        #}
 
         self.start_handler = CommandHandler('start', self.start)        
         self.request_handler = MessageHandler(Filters.command, self.request)
 
-        self.updater = Updater(token='742169188:AAExqFAHXxvhYp59d95SJlrg9n_hhZe0vuE', request_kwargs=self.REQUEST_KWARGS)
+        self.updater = Updater(token='742169188:AAExqFAHXxvhYp59d95SJlrg9n_hhZe0vuE')#, request_kwargs=self.REQUEST_KWARGS)
         
         self.dispatcher = self.updater.dispatcher
         self.dispatcher.add_handler(self.start_handler)
