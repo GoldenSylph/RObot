@@ -14,7 +14,7 @@ FIRST_MODEL_USE, SECOND_MODEL_USE, MODELS_DECLARE = range(3)
 class TelegramROBot:
 
     def show_start_over_keyboard(self, bot, update):
-        custom_keyboard = [['/start']]
+        custom_keyboard = [['Back']]
         reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
         bot.send_message(chat_id=update.message.chat_id, 
                  text="Or you can start over.", 
@@ -52,7 +52,7 @@ class TelegramROBot:
         return SECOND_MODEL_USE
 
     def models_declare(self, bot, update):
-        if update.message.text == 'Random Forests and SVR':
+        if update.message.text == 'Random Forests and SVM':
             return self.first_model_declare(bot, update)
         elif update.message.text == 'LSTM':
             return self.second_model_declare(bot, update)
@@ -61,12 +61,18 @@ class TelegramROBot:
                          text="Sorry, did not understand your model.")
 
     def second_model_use(self, bot, update):
+        if update.message.text == 'Back':
+            self.show_start_keyboard(bot, update)
+            return MODELS_DECLARE
         bot.send_message(chat_id=update.message.chat_id,
                          text="You used the LSTM model.")
         self.show_start_keyboard(bot, update)
         return MODELS_DECLARE
 
     def first_model_use(self, bot, update):
+        if update.message.text == 'Back':
+            self.show_start_keyboard(bot, update)
+            return MODELS_DECLARE
         bot.send_message(chat_id=update.message.chat_id,
                          text="You used the Random Forests and SVR model.")        
         self.show_start_keyboard(bot, update)
@@ -108,8 +114,8 @@ class TelegramROBot:
 
             states = {
                 MODELS_DECLARE: [RegexHandler('^(Random Forests and SVM|LSTM)$', self.models_declare)],
-                FIRST_MODEL_USE: [RegexHandler('^(\d?.\d+) (\d?.\d+) ([1-6]?\d) ([1-6]?\d) ([1-6]?\d) [1-7] [1-4] (\d|1[0-2]) ([1-3]?\d)/(\d|1[0-2])/\d{4}$', self.first_model_use)],
-                SECOND_MODEL_USE: [RegexHandler('^([1-3]?\d)/(\d|1[0-2])/\d{4} ([1-6]?\d) ([1-6]?\d)? ([1-6]?\d)?$', self.second_model_use)],
+                FIRST_MODEL_USE: [RegexHandler('^((\d?.\d+) (\d?.\d+) ([1-6]?\d) ([1-6]?\d) ([1-6]?\d) [1-7] [1-4] (\d|1[0-2]) ([1-3]?\d)/(\d|1[0-2])/\d{4}|Back)$', self.first_model_use)],
+                SECOND_MODEL_USE: [RegexHandler('^(([1-3]?\d)/(\d|1[0-2])/\d{4} ([1-6]?\d) ([1-6]?\d)? ([1-6]?\d)?|Back)$', self.second_model_use)],
             },
 
             fallbacks=[CommandHandler('cancel', self.cancel)]
