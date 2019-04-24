@@ -101,7 +101,7 @@ class TelegramROBot:
         self.dispatcher = self.updater.dispatcher
 
         conv_handler = ConversationHandler(
-            entry_points = [CommandHandler('start', start)],
+            entry_points = [CommandHandler('start', self.start)],
 
             states = {
                 MODELS_DECLARE: [RegexHandler('^(Random Forests and SVM|LSTM)$', self.models_declare)],
