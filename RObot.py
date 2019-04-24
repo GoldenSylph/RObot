@@ -22,7 +22,7 @@ class TelegramROBot:
 
     def show_start_keyboard(self, bot, update):
         custom_keyboard = [['Random Forests and SVM', 'LSTM'],
-                           ['/exit', '/start']]
+                           ['/exit']]
         reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
         bot.send_message(chat_id=update.message.chat_id, 
                  text="Please choose the function.", 
@@ -88,7 +88,11 @@ class TelegramROBot:
     def exit(self, bot, update):
         bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         time.sleep(1)
-        bot.send_message(chat_id=update.message.chat_id, text="Ok, see you later!")        
+        custom_keyboard = [['/start']]
+        reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+        bot.send_message(chat_id=update.message.chat_id, 
+                 text="Ok, see you later!", 
+                 reply_markup=reply_markup)
         return ConversationHandler.END
 
     def start(self, bot, update):
