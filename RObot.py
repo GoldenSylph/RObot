@@ -21,7 +21,8 @@ class TelegramROBot:
                  reply_markup=reply_markup)
 
     def show_start_keyboard(self, bot, update):
-        custom_keyboard = [['Random Forests and SVM', 'LSTM']]
+        custom_keyboard = [['Random Forests and SVM', 'LSTM'],
+                           ['/exit', '/start']]
         reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
         bot.send_message(chat_id=update.message.chat_id, 
                  text="Please choose the function.", 
@@ -59,6 +60,7 @@ class TelegramROBot:
         else:
             bot.send_message(chat_id=update.message.chat_id,
                          text="Sorry, did not understand your model.")
+            return MODELS_DECLARE
 
     def second_model_use(self, bot, update):
         if update.message.text == 'Back':
@@ -83,7 +85,10 @@ class TelegramROBot:
         time.sleep(1)
         bot.send_message(chat_id=update.message.chat_id, text="Sorry, there is an error occured! :(")
 
-    def cancel(self, bot, update):
+    def exit(self, bot, update):
+        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        time.sleep(1)
+        bot.send_message(chat_id=update.message.chat_id, text="Ok, see you later!")        
         return ConversationHandler.END
 
     def start(self, bot, update):
@@ -118,7 +123,7 @@ class TelegramROBot:
                 SECOND_MODEL_USE: [RegexHandler('^(([1-3]?\d)/(\d|1[0-2])/\d{4} ([1-6]?\d) ([1-6]?\d)? ([1-6]?\d)?|Back)$', self.second_model_use)],
             },
 
-            fallbacks=[CommandHandler('cancel', self.cancel)]
+            fallbacks=[CommandHandler('exit', self.exit)]
         )
 
         self.dispatcher.add_handler(conv_handler)
