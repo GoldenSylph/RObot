@@ -90,10 +90,10 @@ class TelegramROBot:
         self.show_start_keyboard(bot, update)
         return MODELS_DECLARE
 
-    def error(self, bot, update):
+    def error(self, bot, update, error):
         bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         time.sleep(1)
-        bot.send_message(chat_id=update.message.chat_id, text="Sorry, there is an error occured! :(")
+        bot.send_message(chat_id=update.message.chat_id, text="Sorry, there is an error occured! :( - %s" % str(error))
 
     def exit(self, bot, update):
         bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
@@ -109,15 +109,6 @@ class TelegramROBot:
         self.show_start_keyboard(bot, update)
         return MODELS_DECLARE
         
-    #def get_cost_from_first(self, bot, update):
-     #   pass
-        #args = list(map(float, args))
-        #result = self.facade.get_probability(args[0], args[1], args[2],
-        #                                args[3], args[4], args[5], args[6], args[7],
-        #                                time.mktime(datetime.datetime.strptime(args[8], "%d/%m/%Y").timetuple()))
-        #bot.send_message(chat_id=update.message.chat_id, text="The cost of first model is: {0} ETH" % str(result))
-
-        
     def launch(self):
         self.facade = API.Facade()
         self.updater.start_polling()
@@ -125,7 +116,7 @@ class TelegramROBot:
 
     def __init__(self):
 
-        self.updater = Updater(token='742169188:AAExqFAHXxvhYp59d95SJlrg9n_hhZe0vuE')#, request_kwargs=REQUEST_KWARGS)
+        self.updater = Updater(token='742169188:AAExqFAHXxvhYp59d95SJlrg9n_hhZe0vuE')
         self.dispatcher = self.updater.dispatcher
 
         conv_handler = ConversationHandler(
