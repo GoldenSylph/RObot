@@ -8,18 +8,10 @@ import os
 import psycopg2
 from functools import wraps
 
-def send_typing_action(func):
-        """Sends typing action while processing func command."""
-
-        @wraps(func)
-        def command_func(update, context, *args, **kwargs):
-            context.bot.send_chat_action(chat_id=update.effective_message.chat_id, action=ChatAction.TYPING)
-            return func(update, context,  *args, **kwargs)
-
 class TelegramROBot:
 
-    @send_typing_action
     def request(self, bot, update):
+        bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
         bot.send_message(chat_id=update.message.chat_id, text="Interpretating...")
 
     def start(self, bot, update):
