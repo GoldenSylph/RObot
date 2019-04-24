@@ -3,6 +3,8 @@ import numpy as np
 import datetime as dt
 import calendar
 import time
+import os
+import pickle
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -37,8 +39,8 @@ class ProbabilityModel(Initable):
 
     def init_main_data(self):
         print('Initalization of main data...')
-        self.main_seconds_data = self.raw_seconds_data[self.main_signature_with_time]
-        self.main_minutes_data = self.raw_minutes_data[self.main_signature_with_time]
+        self.main_seconds_data = self.raw_seconds_data[self.main_signature_with_time].sample(300)
+        self.main_minutes_data = self.raw_minutes_data[self.main_signature_with_time].sample(300)
         self.main_hours_data = self.raw_hours_data[self.main_signature_with_time]
         self.main_daily_data = self.raw_daily_data[self.main_signature_with_time]
         self.main_weeks_data = self.raw_weeks_data[self.main_signature_with_time]
@@ -75,12 +77,12 @@ class ProbabilityModel(Initable):
 
     def init_test_data_parts(self):
         print('Initialization of test data parts...')
-        self.seconds_part = 0.5
-        self.minutes_part = 0.5
-        self.hours_part = 0.5
-        self.daily_part = 0.5
-        self.weeks_part = 0.5
-        self.months_part = 0.5
+        self.seconds_part = 1
+        self.minutes_part = 1
+        self.hours_part = 1
+        self.daily_part = 1
+        self.weeks_part = 1
+        self.months_part = 1
 
     def init_seconds_model(self):
         print('Initialization of seconds classifier...')
@@ -88,7 +90,7 @@ class ProbabilityModel(Initable):
         self.X_seconds_train, self.X_seconds_test, self.y_seconds_train, self.y_seconds_test = train_test_split(self.X_seconds,
                                                                                         self.y_seconds, test_size=self.seconds_part)
         self.seconds_rfc = RandomForestClassifier(criterion='entropy', n_estimators=100).fit(self.X_seconds_train, self.y_seconds_train)
-        print('Seconds RFC Score: ' + str(self.seconds_rfc.score(self.X_seconds_test, self.y_seconds_test)))
+        print('Seconds RFC configured...')
 
     def init_minutes_model(self):
         print('Initialization of minutes classifier...')
@@ -96,7 +98,7 @@ class ProbabilityModel(Initable):
         self.X_minutes_train, self.X_minutes_test, self.y_minutes_train, self.y_minutes_test = train_test_split(self.X_minutes,
                                                                                         self.y_minutes, test_size=self.minutes_part)
         self.minutes_rfc = RandomForestClassifier(criterion='entropy', n_estimators=100).fit(self.X_minutes_train, self.y_minutes_train)
-        print('Minutes RFC Score: ' + str(self.minutes_rfc.score(self.X_minutes_test, self.y_minutes_test)))
+        print('Minutes RFC configured...')
 
     def init_hours_model(self):
         print('Initialization of hours classifier...')
@@ -104,7 +106,7 @@ class ProbabilityModel(Initable):
         self.X_hours_train, self.X_hours_test, self.y_hours_train, self.y_hours_test = train_test_split(self.X_hours,
                                                                                         self.y_hours, test_size=self.hours_part)
         self.hours_rfc = RandomForestClassifier(criterion='entropy', n_estimators=100).fit(self.X_hours_train, self.y_hours_train)
-        print('Hours RFC Score: ' + str(self.hours_rfc.score(self.X_hours_test, self.y_hours_test)))
+        print('Hours RFC Score configured...')
 
     def init_daily_model(self):
         print('Initialization of days classifier...')
@@ -112,7 +114,7 @@ class ProbabilityModel(Initable):
         self.X_daily_train, self.X_daily_test, self.y_daily_train, self.y_daily_test = train_test_split(self.X_daily,
                                                                                         self.y_daily, test_size=self.daily_part)
         self.daily_rfc = RandomForestClassifier(criterion='entropy', n_estimators=100).fit(self.X_daily_train, self.y_daily_train)
-        print('Daily RFC Score: ' + str(self.daily_rfc.score(self.X_daily_test, self.y_daily_test)))
+        print('Daily RFC Score configured...')
 
     def init_weeks_model(self):
         print('Initialization of weeks classifier...')
@@ -120,7 +122,7 @@ class ProbabilityModel(Initable):
         self.X_weeks_train, self.X_weeks_test, self.y_weeks_train, self.y_weeks_test = train_test_split(self.X_weeks,
                                                                                         self.y_weeks, test_size=self.weeks_part)
         self.weeks_rfc = RandomForestClassifier(criterion='entropy', n_estimators=100).fit(self.X_weeks_train, self.y_weeks_train)
-        print('Weeks RFC Score: ' + str(self.weeks_rfc.score(self.X_weeks_test, self.y_weeks_test)))
+        print('Weeks RFC Score configured...')
 
     def init_months_model(self):
         print('Initialization of months classifier...')
@@ -128,7 +130,7 @@ class ProbabilityModel(Initable):
         self.X_months_train, self.X_months_test, self.y_months_train, self.y_months_test = train_test_split(self.X_months,
                                                                                         self.y_months, test_size=self.months_part)
         self.months_rfc = RandomForestClassifier(criterion='entropy', n_estimators=100).fit(self.X_months_train, self.y_months_train)
-        print('Months RFC Score: ' + str(self.months_rfc.score(self.X_months_test, self.y_months_test)))
+        print('Months RFC configured...')
 
     def find_rfc_results_by_hashes(self, hashes):
         result = pd.merge(self.main_data, hashes, how='inner').drop_duplicates()
@@ -153,26 +155,52 @@ class ProbabilityModel(Initable):
         svr_rbf = SVR(kernel='rbf', C=100, gamma=0.1, epsilon=.1).fit(svr_train_data[svr_data_x_signature],
                                                                              svr_train_data[svr_data_y_signature])
         return svr_rbf
+
+    def init_save_filenames(self):
+        self.main_save_directory = 'model_saves/first_module'
+        self.save_seconds_rfc_path = self.main_save_directory + '/seconds_model.sav'
+        self.save_minutes_rfc_path = self.main_save_directory + '/minutes_model.sav'
+        self.save_hours_rfc_path = self.main_save_directory +   '/hours_model.sav'
+        self.save_daily_rfc_path = self.main_save_directory +   '/daily_model.sav'
+        self.save_weeks_rfc_path = self.main_save_directory +   '/weeks_model.sav'
+        self.save_months_rfc_path = self.main_save_directory +  '/months_model.sav'
     
     def init_model(self):
         print('Initialization of model...')
         self.init_signatures()
         self.init_filename()
+        self.init_save_filenames()
         self.init_test_data_parts()
         self.reinit_specific_models()
-
+        
     def reinit_specific_models(self):
-        print('Reinit specific models begins...')
-        self.init_raw_data()
-        self.init_main_data()
-        self.bootstrap()
-        self.init_seconds_model()
-        self.init_minutes_model()
-        self.init_hours_model()
-        self.init_daily_model()
-        self.init_weeks_model()
-        self.init_months_model()
-        print('Reinit specific models complete...')
+        if os.path.isfile(self.save_seconds_rfc_path) and os.path.isfile(self.save_minutes_rfc_path) and os.path.isfile(self.save_hours_rfc_path) and os.path.isfile(self.save_daily_rfc_path) and os.path.isfile(self.save_weeks_rfc_path) and os.path.isfile(self.save_months_rfc_path):
+            print('Specific models are persist, loading...')
+            self.seconds_rfc = pickle.load(open(self.save_seconds_rfc_path, 'rb'))
+            self.minutes_rfc = pickle.load(open(self.save_minutes_rfc_path, 'rb'))
+            self.hours_rfc = pickle.load(open(self.save_hours_rfc_path, 'rb'))
+            self.daily_rfc = pickle.load(open(self.save_daily_rfc_path, 'rb'))
+            self.weeks_rfc = pickle.load(open(self.save_weeks_rfc_path, 'rb'))
+            self.months_rfc = pickle.load(open(self.save_months_rfc_path, 'rb'))
+            print('Models loading is ended...')
+        else:
+            print('Reinit specific models begins...')
+            self.init_raw_data()
+            self.init_main_data()
+            self.bootstrap()
+            self.init_seconds_model()
+            self.init_minutes_model()
+            self.init_hours_model()
+            self.init_daily_model()
+            self.init_weeks_model()
+            self.init_months_model()
+            pickle.dump(self.seconds_rfc, open(self.save_seconds_rfc_path, 'wb'))
+            pickle.dump(self.minutes_rfc, open(self.save_minutes_rfc_path, 'wb'))
+            pickle.dump(self.hours_rfc, open(self.save_hours_rfc_path, 'wb'))
+            pickle.dump(self.daily_rfc, open(self.save_daily_rfc_path, 'wb'))
+            pickle.dump(self.weeks_rfc, open(self.save_weeks_rfc_path, 'wb'))
+            pickle.dump(self.months_rfc, open(self.save_months_rfc_path, 'wb'))
+            print('Reinit specific models complete...')
 
     def start_updating_data(self):
         self.scheduler = BackgroundScheduler()
@@ -182,8 +210,8 @@ class ProbabilityModel(Initable):
             
     def initialize(self):
         print('Initialization in progress...')
-        #self.init_model()
-        #self.start_updating_data()
+        self.init_model()
+        self.start_updating_data()
         print('Probability module is ready to work. Standby...')
 
     def get_probability(self, high, low, second, minute, hour, week_day, week_number, month, time):
