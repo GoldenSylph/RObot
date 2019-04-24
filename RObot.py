@@ -14,8 +14,6 @@ class TelegramROBot:
         bot.send_message(chat_id=update.message.chat_id, text="Interpretating...")
 
     def start(self, bot, update):
-        #input_message = update.message.text
-        
         custom_keyboard = [['first_module', 'second_module']]
         reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
         bot.send_message(chat_id=update.message.chat_id, 
@@ -35,11 +33,6 @@ class TelegramROBot:
         self.updater.start_polling()
 
     def __init__(self):
-
-        #self.DATABASE_URL = os.environ['DATABASE_URL']
-        
-        #self.conn = psycopg2.connect(self.DATABASE_URL, sslmode='require')
-
         #self.REQUEST_KWARGS={
         #    'proxy_url': 'socks5://110.49.101.58:1080'
         #}
