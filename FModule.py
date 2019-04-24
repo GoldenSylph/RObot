@@ -174,6 +174,9 @@ class ProbabilityModel(Initable):
         self.reinit_specific_models()
         
     def reinit_specific_models(self):
+        self.init_raw_data()
+        self.init_main_data()
+        self.bootstrap()
         if os.path.isfile(self.save_seconds_rfc_path) and os.path.isfile(self.save_minutes_rfc_path) and os.path.isfile(self.save_hours_rfc_path) and os.path.isfile(self.save_daily_rfc_path) and os.path.isfile(self.save_weeks_rfc_path) and os.path.isfile(self.save_months_rfc_path):
             print('Specific models are persist, loading...')
             self.seconds_rfc = pickle.load(open(self.save_seconds_rfc_path, 'rb'))
@@ -185,9 +188,6 @@ class ProbabilityModel(Initable):
             print('Models loading is ended...')
         else:
             print('Reinit specific models begins...')
-            self.init_raw_data()
-            self.init_main_data()
-            self.bootstrap()
             self.init_seconds_model()
             self.init_minutes_model()
             self.init_hours_model()
