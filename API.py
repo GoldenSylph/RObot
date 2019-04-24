@@ -22,7 +22,7 @@ class DependencyInjector:
 
     def inject(self, file_name):
         models_description = pd.read_csv(file_name)
-        print(models_description)
+        print('Model description loaded: %s' % str(models_description))
         models = {}
         for index, row in models_description.iterrows():
             temp_model_name = row['model_name']
