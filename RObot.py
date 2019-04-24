@@ -18,7 +18,7 @@ def send_typing_action(func):
 
 class TelegramROBot:
 
-    @send_typing_action
+    #@send_typing_action
     def request(self, bot, update):
         bot.send_message(chat_id=update.message.chat_id, text="Interpretating...")
 
@@ -45,18 +45,18 @@ class TelegramROBot:
 
     def __init__(self):
         
-        #self.REQUEST_KWARGS={
+        #REQUEST_KWARGS={
         #    'proxy_url': 'socks5://110.49.101.58:1080'
         #}
 
-        self.start_handler = CommandHandler('start', self.start)        
-        self.request_handler = MessageHandler(Filters.text, self.request)
+        start_handler = CommandHandler('start', self.start)        
+        request_handler = MessageHandler(Filters.text, self.request)
 
-        self.updater = Updater(token='742169188:AAExqFAHXxvhYp59d95SJlrg9n_hhZe0vuE')#, request_kwargs=self.REQUEST_KWARGS)
+        self.updater = Updater(token='742169188:AAExqFAHXxvhYp59d95SJlrg9n_hhZe0vuE')#, request_kwargs=REQUEST_KWARGS)
 
         self.dispatcher = self.updater.dispatcher
-        self.dispatcher.add_handler(self.start_handler)
-        self.dispatcher.add_handler(self.request_handler)
+        self.dispatcher.add_handler(start_handler)
+        self.dispatcher.add_handler(request_handler)
         
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                              level=logging.INFO)
