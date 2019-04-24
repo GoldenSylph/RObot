@@ -119,8 +119,8 @@ class TelegramROBot:
 
             states = {
                 MODELS_DECLARE: [RegexHandler('^(Random Forests and SVM|LSTM)$', self.models_declare)],
-                FIRST_MODEL_USE: [RegexHandler('^((\d?.\d+) (\d?.\d+) ([1-6]?\d) ([1-6]?\d) ([1-6]?\d) [1-7] [1-4] (\d|1[0-2]) ([1-3]?\d)/(\d|1[0-2])/\d{4}|Back)$', self.first_model_use)],
-                SECOND_MODEL_USE: [RegexHandler('^(([1-3]?\d)/(\d|1[0-2])/\d{4} ([1-6]?\d) ([1-6]?\d)? ([1-6]?\d)?|Back)$', self.second_model_use)],
+                FIRST_MODEL_USE: [RegexHandler('^((\d?.\d+) (\d?.\d+) \d{2} \d{2} \d{2} \d \d \d{2} \d{2}/\d{2}/\d{4}|Back)$', self.first_model_use)],
+                SECOND_MODEL_USE: [RegexHandler('^(\d{2}/\d{2}/\d{4} \d{2} \d{2} \d{2}|Back)$', self.second_model_use)],
             },
 
             fallbacks=[CommandHandler('exit', self.exit)]
