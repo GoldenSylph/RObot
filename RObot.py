@@ -12,6 +12,7 @@ class TelegramROBot:
 
     def request(self, bot, update):
         bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+        time.sleep(1)
         bot.send_message(chat_id=update.message.chat_id, text="Interpretating...")
 
     def start(self, bot, update):
