@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split
 from API import Initable
 from apscheduler.schedulers.background import BackgroundScheduler
 from sklearn.svm import SVR
+from sklearn.metrics import accuracy_score
 
 class ProbabilityModel(Initable):
     
@@ -207,10 +208,21 @@ class ProbabilityModel(Initable):
         self.scheduler.add_job(self.reinit_specific_models, 'cron', week='*')
         print('Start updating data job...')
         self.scheduler.start()
-            
+
+    def print_score(self):
+        sample_svr = self.get_svr_model(self.main_data[self.arguments_signature])
+        #temp_last_vals = list(map(lambda x: [x], self.main_data['last'].values))
+        #print(temp_last_vals)
+        #predicted_last_vals = sample_svr.predict()
+        #predicted_last_vals = list(map(lambda x: [x], predicted_last_vals))
+        #print(predicted_last_vals)
+        accuracy_score(sample_svr.predict(self.main_data[['high', 'low', 'time']].values), self.main_data['last'].values)
+        #print(sample_svr.score(self.main_data[['high', 'low', 'time']].values, self.main_data['last'].values))
+    
     def initialize(self):
         print('Initialization in progress...')
         self.init_model()
+        #self.print_score()
         self.start_updating_data()
         print('Probability module is ready to work. Standby...')
 
