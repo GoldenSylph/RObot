@@ -90,7 +90,7 @@ class ProbabilityModel(Initable):
         self.X_seconds, self.y_seconds = self.main_seconds_data[self.arguments_signature], self.main_seconds_data[self.hash_result_signature]
         self.X_seconds_train, self.X_seconds_test, self.y_seconds_train, self.y_seconds_test = train_test_split(self.X_seconds,
                                                                                         self.y_seconds, test_size=self.seconds_part)
-        self.seconds_rfc = RandomForestClassifier(criterion='entropy', n_estimators=100).fit(self.X_seconds_train, self.y_seconds_train)
+        self.seconds_rfc = RandomForestClassifier(criterion=self.rfc_criterion, n_estimators=100).fit(self.X_seconds_train, self.y_seconds_train)
         print('Seconds RFC configured...')
 
     def init_minutes_model(self):
@@ -98,7 +98,7 @@ class ProbabilityModel(Initable):
         self.X_minutes, self.y_minutes = self.main_minutes_data[self.arguments_signature], self.main_minutes_data[self.hash_result_signature]
         self.X_minutes_train, self.X_minutes_test, self.y_minutes_train, self.y_minutes_test = train_test_split(self.X_minutes,
                                                                                         self.y_minutes, test_size=self.minutes_part)
-        self.minutes_rfc = RandomForestClassifier(criterion='entropy', n_estimators=100).fit(self.X_minutes_train, self.y_minutes_train)
+        self.minutes_rfc = RandomForestClassifier(criterion=self.rfc_criterion, n_estimators=100).fit(self.X_minutes_train, self.y_minutes_train)
         print('Minutes RFC configured...')
 
     def init_hours_model(self):
@@ -106,7 +106,7 @@ class ProbabilityModel(Initable):
         self.X_hours, self.y_hours = self.main_hours_data[self.arguments_signature], self.main_hours_data[self.hash_result_signature]
         self.X_hours_train, self.X_hours_test, self.y_hours_train, self.y_hours_test = train_test_split(self.X_hours,
                                                                                         self.y_hours, test_size=self.hours_part)
-        self.hours_rfc = RandomForestClassifier(criterion='entropy', n_estimators=100).fit(self.X_hours_train, self.y_hours_train)
+        self.hours_rfc = RandomForestClassifier(criterion=self.rfc_criterion, n_estimators=100).fit(self.X_hours_train, self.y_hours_train)
         print('Hours RFC Score configured...')
 
     def init_daily_model(self):
@@ -114,7 +114,7 @@ class ProbabilityModel(Initable):
         self.X_daily, self.y_daily = self.main_daily_data[self.arguments_signature], self.main_daily_data[self.hash_result_signature]
         self.X_daily_train, self.X_daily_test, self.y_daily_train, self.y_daily_test = train_test_split(self.X_daily,
                                                                                         self.y_daily, test_size=self.daily_part)
-        self.daily_rfc = RandomForestClassifier(criterion='entropy', n_estimators=100).fit(self.X_daily_train, self.y_daily_train)
+        self.daily_rfc = RandomForestClassifier(criterion=self.rfc_criterion, n_estimators=100).fit(self.X_daily_train, self.y_daily_train)
         print('Daily RFC Score configured...')
 
     def init_weeks_model(self):
@@ -122,7 +122,7 @@ class ProbabilityModel(Initable):
         self.X_weeks, self.y_weeks = self.main_weeks_data[self.arguments_signature], self.main_weeks_data[self.hash_result_signature]
         self.X_weeks_train, self.X_weeks_test, self.y_weeks_train, self.y_weeks_test = train_test_split(self.X_weeks,
                                                                                         self.y_weeks, test_size=self.weeks_part)
-        self.weeks_rfc = RandomForestClassifier(criterion='entropy', n_estimators=100).fit(self.X_weeks_train, self.y_weeks_train)
+        self.weeks_rfc = RandomForestClassifier(criterion=self.rfc_criterion, n_estimators=100).fit(self.X_weeks_train, self.y_weeks_train)
         print('Weeks RFC Score configured...')
 
     def init_months_model(self):
@@ -130,7 +130,7 @@ class ProbabilityModel(Initable):
         self.X_months, self.y_months = self.main_months_data[self.arguments_signature], self.main_months_data[self.hash_result_signature]
         self.X_months_train, self.X_months_test, self.y_months_train, self.y_months_test = train_test_split(self.X_months,
                                                                                         self.y_months, test_size=self.months_part)
-        self.months_rfc = RandomForestClassifier(criterion='entropy', n_estimators=100).fit(self.X_months_train, self.y_months_train)
+        self.months_rfc = RandomForestClassifier(criterion=self.rfc_criterion, n_estimators=100).fit(self.X_months_train, self.y_months_train)
         print('Months RFC configured...')
 
     def find_rfc_results_by_hashes(self, hashes):
@@ -165,6 +165,9 @@ class ProbabilityModel(Initable):
         self.save_daily_rfc_path = self.main_save_directory +   '/daily_model.sav'
         self.save_weeks_rfc_path = self.main_save_directory +   '/weeks_model.sav'
         self.save_months_rfc_path = self.main_save_directory +  '/months_model.sav'
+
+    def init_rfc_criterion(self):
+        self.rfc_criterion = 'gini'
     
     def init_model(self):
         print('Initialization of model...')
@@ -172,6 +175,7 @@ class ProbabilityModel(Initable):
         self.init_filename()
         self.init_save_filenames()
         self.init_test_data_parts()
+        self.init_rfc_criterion()
         self.reinit_specific_models()
         
     def reinit_specific_models(self):
@@ -216,13 +220,13 @@ class ProbabilityModel(Initable):
         #predicted_last_vals = sample_svr.predict()
         #predicted_last_vals = list(map(lambda x: [x], predicted_last_vals))
         #print(predicted_last_vals)
-        accuracy_score(sample_svr.predict(self.main_data[['high', 'low', 'time']].values), self.main_data['last'].values)
-        #print(sample_svr.score(self.main_data[['high', 'low', 'time']].values, self.main_data['last'].values))
+        #accuracy_score(sample_svr.predict(self.main_data[['high', 'low', 'time']].values), self.main_data['last'].values)
+        print(sample_svr.score(self.main_data[['high', 'low', 'time']].values, self.main_data['last'].values))
     
     def initialize(self):
         print('Initialization in progress...')
         self.init_model()
-        self.print_score()
+        #self.print_score()    
         self.start_updating_data()
         print('Probability module is ready to work. Standby...')
 

@@ -144,5 +144,5 @@ class NeuralNetworkModel():
 
 if __name__ == '__main__':
     a = NeuralNetworkModel()
-    a.load_data('minutes.csv', 12000, True)
+    a.load_data('data/minutes.csv', 12000, True)
 ##    a.load_model()
