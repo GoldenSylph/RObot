@@ -222,7 +222,7 @@ class ProbabilityModel(Initable):
     def initialize(self):
         print('Initialization in progress...')
         self.init_model()
-        #self.print_score()
+        self.print_score()
         self.start_updating_data()
         print('Probability module is ready to work. Standby...')
 
