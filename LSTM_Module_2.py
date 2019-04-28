@@ -6,13 +6,15 @@ from numpy import newaxis
 from keras.layers.core import Dense, Activation, Dropout
 from keras.layers.recurrent import LSTM
 from keras.models import Sequential
+from keras.models import model_from_json
 import matplotlib.pyplot as plt
 import tensorflow as tf
+import datetime
 
 warnings.filterwarnings("ignore")
 
 class NeuralNetworkModel():
-    
+
     def load_data(self, filename, seq_len, normalise_window):
         self.myDataFromCSV = pd.read_csv(filename)
         self.timestamps_c = []
@@ -55,10 +57,6 @@ class NeuralNetworkModel():
         print(input_length)#12000
         print(input_dim)#1
         print(output_dim)#2993
-
-        layers = [input_dim, 5, input_dim, 5]
-
-        self.build_model(layers)
         
         return [self.x_train, self.y_train, self.x_test, self.y_test]
 
@@ -73,36 +71,27 @@ class NeuralNetworkModel():
         self.model = Sequential()
 
         self.model.add(LSTM(
-            input_dim=layers[0],
-            output_dim=layers[1],
+            input_dim=1,
+            output_dim=50,
             return_sequences=True))
         self.model.add(Dropout(0.2))
 
         self.model.add(LSTM(
-            layers[2],
+            100,
             return_sequences=False))
         self.model.add(Dropout(0.2))
 
         self.model.add(Dense(
-            output_dim=layers[3]))
+            output_dim=1))
         self.model.add(Activation("linear"))
-
-        self.model.compile(optimizer='rmsprop',
-              loss='categorical_crossentropy',
-              metrics=['accuracy'])
-        self.model.fit(self.x_train, self.x_test, batch_size=32, epochs=5)
 
         start = time.time()
         self.model.compile(loss="mse", optimizer="rmsprop")
+
         print('Compilation Time : %.5f', time.time() - start)
         print(self.model)
-
-##        self.predict_point_by_point(self.model, self.x_train)
-        self.predict_sequence_full(self.model, self.x_train, 100)
-        self.save_model()
-        self.predict_sequences_multiple(self.model, self.x_train, 100, (len(self.data) - 12000))
         
-        return model
+        return self.model
 
     def predict_point_by_point(self, model, data):
         #Predict each timestep given the last sequence of true data, in effect only predicting 1 step ahead each time
@@ -112,7 +101,6 @@ class NeuralNetworkModel():
         return property
 
     def predict_sequence_full(self, model, data, window_size):
-        #Shift the window by 1 new prediction each time, re-run predictions on new window
         curr_frame = data[0]
         predicted = []
         for i in range(len(data)):
@@ -125,10 +113,10 @@ class NeuralNetworkModel():
     def predict_sequences_multiple(self, model, data, window_size, prediction_len):
         #Predict sequence of 50 steps before shifting prediction run forward by 50 steps
         prediction_seqs = []
-        for i in range(len(data)/prediction_len):
+        for i in range(int(len(data)/prediction_len)):
             curr_frame = data[i*prediction_len]
             predicted = []
-            for j in xrange(prediction_len):
+            for j in range(prediction_len):
                 predicted.append(model.predict(curr_frame[newaxis,:,:])[0,0])
                 curr_frame = curr_frame[1:]
                 curr_frame = np.insert(curr_frame, [window_size-1], predicted[-1], axis=0)
@@ -136,13 +124,63 @@ class NeuralNetworkModel():
         print('Done predict')
         return prediction_seqs
 
-    def save_model(self):
-        self.model.save('my_model.h5')
+    def save_model(self, model, filename, jsonfile):
+        model_json = model.to_json()
+        with open(jsonfile, "w") as json_file:
+            json_file.write(model_json)
+        model.save_weights(filename)
+        print("Save model")
 
-    def load_model(self):
-        self.loaded_model = tf.keras.models.load_model('my_model.h5')
+
+    def load_model(self, jsonfile):
+        json_file = open(jsonfile, 'r')
+        loaded_model_json = json_file.read()
+        json_file.close()
+        loaded_model = model_from_json(loaded_model_json)
+        print('End model loading')
+        return loaded_model
+
+    def get_cost(self, time):
+        myList = time.split('/')
+        secondaryList = myList[2].split(' ')
+        myList = myList[:-1]
+        l = myList + secondaryList
+        d = datetime.datetime(int(l[2]), int(l[1]), int(l[0]), int(l[3]), int(l[4]), int(l[5]))
+        
+        self.value = []
+        self.value = self.prices_c[:len(self.x_train)]
+
+        for i in range (len(self.dates_c)):
+            if self.dates_c[i] == d:
+                self.result = self.value[i]
+            else:
+                self.result = 0.000199001731675508
+
+        return self.result
 
 if __name__ == '__main__':
     a = NeuralNetworkModel()
-    a.load_data('data/minutes.csv', 12000, True)
-##    a.load_model()
+    X_train, y_train, X_test, y_test = a.load_data('minutes.csv', 50, True)
+    layers = []
+    model = a.build_model(layers)
+
+    model.fit(
+        X_train,
+        y_train,
+        batch_size=512,
+        nb_epoch=1,
+        validation_split=0.05)
+    
+    predictions = a.predict_sequences_multiple(model, X_test, 50, 50)
+        
+    #save
+    a.save_model(model, "model.h5", "model.json")
+
+    #load
+    loaded_model = a.load_model('model.json')
+                        
+    
+##    a.save_model(model)
+##    loaded_model = a.load_model('my_model.h5')
+    
+##    print(a.get_cost('29/03/2019 11 30 00'))
