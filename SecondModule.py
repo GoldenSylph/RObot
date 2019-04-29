@@ -24,7 +24,9 @@ class NeuralNetworkModel(Initable):
         self.data_file_name = 'data/minutes.csv'
 
     def initialize_data(self, filename):
-        self.data = pd.read_csv(filename)['last'].tolist()
+        self.raw_data = pd.read_csv(filename)
+        self.data = self.raw_data['last'].tolist()
+        self.base_timestamp = self.raw_data['time'].tolist()[0]
 
     def load_data(self, filename, seq_len, normalise_window):
         #f = open(filename, 'r').read()
@@ -107,9 +109,9 @@ class NeuralNetworkModel(Initable):
 
     def get_cost(self, input_time):
         input_timestamp = time.mktime(datetime.datetime.strptime(input_time, "%d/%m/%Y %H %M %S").timetuple())
-        base_timestamp = float(self.data[0])
-        print('Base timestamp is: ' + str(base_timestamp))
-        main_input = input_timestamp - base_timestamp
+        print('Base timestamp is: ' + str(self.base_timestamp))
+        main_input = np.array([[[input_timestamp - self.base_timestamp]]])
+        print('Main input: ' + str(main_input))
         return self.denormalise_point(float(self.predict_point_by_point(self.model, main_input)))
 
     def initialize_and_save(self):
