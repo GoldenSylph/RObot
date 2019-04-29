@@ -103,11 +103,11 @@ class NeuralNetworkModel(Initable):
         print('End model loading')
 
     def denormalise_point(self, point):
-        return self.data['last'].iloc[0] * (point + 1)
+        return float(self.data[0]) * (point + 1)
 
     def get_cost(self, input_time):
         input_timestamp = time.mktime(datetime.datetime.strptime(input_time, "%d/%m/%Y %H %M %S").timetuple())
-        base_timestamp = self.data['time'].iloc[0]
+        base_timestamp = float(self.data[0])
         print('Base timestamp is: ' + str(base_timestamp))
         main_input = input_timestamp - self.base_timestamp
         return self.denormalise_point(float(self.predict_point_by_point(self.model, main_input)))
