@@ -14,7 +14,7 @@ from sklearn.svm import SVR
 from sklearn.metrics import accuracy_score
 
 class ProbabilityModel(Initable):
-    
+
     #time,minute,week_day,month,hour,second,week_number
     # x1 = cycle times, x2 = low, x3 = high, y = last, timestamp
 
@@ -59,19 +59,19 @@ class ProbabilityModel(Initable):
         self.raw_minutes_data = pd.read_csv(self.minutes_filename)
         self.raw_minutes_data[self.hash_result_signature] = pd.Series((sum(hash(e) for e in row)
                                                                 for i, row in self.raw_minutes_data[self.result_signature].iterrows()))
-        
+
         self.raw_hours_data = pd.read_csv(self.hours_filename)
         self.raw_hours_data[self.hash_result_signature] = pd.Series((sum(hash(e) for e in row)
                                                                 for i, row in self.raw_hours_data[self.result_signature].iterrows()))
-        
+
         self.raw_daily_data = pd.read_csv(self.daily_filename)
         self.raw_daily_data[self.hash_result_signature] = pd.Series((sum(hash(e) for e in row)
                                                                 for i, row in self.raw_daily_data[self.result_signature].iterrows()))
-        
+
         self.raw_weeks_data = pd.read_csv(self.weeks_filename)
         self.raw_weeks_data[self.hash_result_signature] = pd.Series((sum(hash(e) for e in row)
                                                                 for i, row in self.raw_weeks_data[self.result_signature].iterrows()))
-        
+
         self.raw_months_data = pd.read_csv(self.months_filename)
         self.raw_months_data[self.hash_result_signature] = pd.Series((sum(hash(e) for e in row)
                                                                 for i, row in self.raw_months_data[self.result_signature].iterrows()))
@@ -135,7 +135,7 @@ class ProbabilityModel(Initable):
 
     def find_rfc_results_by_hashes(self, hashes):
         result = pd.merge(self.main_data, hashes, how='inner').drop_duplicates()
-        return result       
+        return result
 
     def get_svr_model(self, X_for_rfcs):
         print('Initialization of SVR...')
@@ -145,13 +145,13 @@ class ProbabilityModel(Initable):
         data_daily_train = pd.DataFrame(self.daily_rfc.predict(X_for_rfcs), columns=[self.hash_result_signature])
         data_weeks_train = pd.DataFrame(self.weeks_rfc.predict(X_for_rfcs), columns=[self.hash_result_signature])
         data_months_train = pd.DataFrame(self.months_rfc.predict(X_for_rfcs), columns=[self.hash_result_signature])
-        
+
         svr_train_data_hashes = data_seconds_train.append([data_minutes_train, data_hours_train,
                                                     data_daily_train, data_weeks_train, data_months_train])
-        
+
         svr_data_x_signature = ['time', 'high', 'low']
         svr_data_y_signature = 'last'
-        
+
         svr_train_data = self.find_rfc_results_by_hashes(svr_train_data_hashes)
         svr_rbf = SVR(kernel='rbf', C=100, gamma=0.1, epsilon=.1).fit(svr_train_data[svr_data_x_signature],
                                                                              svr_train_data[svr_data_y_signature])
@@ -168,7 +168,7 @@ class ProbabilityModel(Initable):
 
     def init_rfc_criterion(self):
         self.rfc_criterion = 'gini'
-    
+
     def init_model(self):
         print('Initialization of model...')
         self.init_signatures()
@@ -177,7 +177,7 @@ class ProbabilityModel(Initable):
         self.init_test_data_parts()
         self.init_rfc_criterion()
         self.reinit_specific_models()
-        
+
     def reinit_specific_models(self):
         self.init_raw_data()
         self.init_main_data()
@@ -222,12 +222,12 @@ class ProbabilityModel(Initable):
         #print(predicted_last_vals)
         #accuracy_score(sample_svr.predict(self.main_data[['high', 'low', 'time']].values), self.main_data['last'].values)
         print(sample_svr.score(self.main_data[['high', 'low', 'time']].values, self.main_data['last'].values))
-    
+
     def initialize(self):
         print('Initialization in progress...')
         self.init_model()
-        #self.print_score()    
-        self.start_updating_data()
+        #self.print_score()
+        #self.start_updating_data()
         print('Probability module is ready to work. Standby...')
 
     def get_probability(self, high, low, second, minute, hour, week_day, week_number, month, time):
@@ -246,7 +246,7 @@ class ProbabilityModel(Initable):
         y_day = self.daily_rfc.predict(argument)
         y_week = self.weeks_rfc.predict(argument)
         y_month = self.months_rfc.predict(argument)
-       
+
         svr_y_sec = self.svr_rbf.predict(y_sec)
         svr_y_min = self.svr_rbf.predict(y_min)
         svr_y_hour = self.svr_rbf.predict(y_hour)
