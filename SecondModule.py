@@ -133,6 +133,7 @@ class NeuralNetworkModel(Initable):
         keras.backend.clear_session()
         self.load_model(self.filename, self.jsonfile)
         self.initialize_data(self.data_file_name)
+        self.model._make_predict_function()
         print('LSTM model initialized...')
 
 if __name__ == '__main__':
