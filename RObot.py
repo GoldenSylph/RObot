@@ -68,7 +68,8 @@ class TelegramROBot:
             return MODELS_DECLARE
         bot.send_message(chat_id=update.message.chat_id,
                          text="Acquiring the information from: LSTM model")
-        
+        bot.send_message(chat_id=update.message.chat_id,
+                         text=("Predicted price is: %s" % self.facade.get_cost(update.message.text))
         self.show_start_keyboard(bot, update)
         return MODELS_DECLARE
 
