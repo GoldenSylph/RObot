@@ -106,7 +106,7 @@ class NeuralNetworkModel(Initable):
         return float(self.data['last'][0]) * (point + 1)
 
     def get_cost(self, input_time):
-        input_timestamp = float(time.strptime(input_time,"%d/%b/%Y %H %M %S"))
+        input_timestamp = float(time.strptime(input_time,"%d/%m/%Y %H %M %S"))
         base_timestamp = float(self.data['time'][0])
         main_input = input_timestamp - self.base_timestamp
         return self.denormalise_point(float(self.predict_point_by_point(self.model, main_input)))
