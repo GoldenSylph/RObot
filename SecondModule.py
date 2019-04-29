@@ -23,13 +23,13 @@ class NeuralNetworkModel(Initable):
         self.jsonfile = 'model_saves/second_module/model_weights.json'
         self.data_file_name = 'data\minutes.csv'
 
-    def initialize_data(self):
+    def initialize_data(self, filename):
         self.data = pd.read_csv(filename)['last'].tolist()
 
     def load_data(self, filename, seq_len, normalise_window):
         #f = open(filename, 'r').read()
         #data = f.split('\n')
-        self.initialize_data()
+        self.initialize_data(filename)
         sequence_length = seq_len + 1
         result = []
         for index in range(len(self.data) - sequence_length):
@@ -128,7 +128,7 @@ class NeuralNetworkModel(Initable):
         self.initialize_filenames()
         print('LSTM model init...')
         self.load_model(self.filename, self.jsonfile)
-        self.initialize_data()
+        self.initialize_data(self.data_file_name)
         print('LSTM model initialized...')
 
 if __name__ == '__main__':
