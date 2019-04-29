@@ -109,7 +109,7 @@ class NeuralNetworkModel(Initable):
         input_timestamp = time.mktime(datetime.datetime.strptime(input_time, "%d/%m/%Y %H %M %S").timetuple())
         base_timestamp = float(self.data[0])
         print('Base timestamp is: ' + str(base_timestamp))
-        main_input = input_timestamp - self.base_timestamp
+        main_input = input_timestamp - base_timestamp
         return self.denormalise_point(float(self.predict_point_by_point(self.model, main_input)))
 
     def initialize_and_save(self):
