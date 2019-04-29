@@ -43,4 +43,4 @@ class Facade(Unimplementable):
         return self.models['probability_module'].get_probability(high, low, second, minute, hour, week_day, week_number, month, time)
 
     def get_cost(self, time):
-        return self.models['cost_module'].get_price(time)
+        return self.models['cost_module'].get_cost(time)
