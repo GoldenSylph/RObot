@@ -127,7 +127,7 @@ class NeuralNetworkModel(Initable):
     def initialize(self):
         self.initialize_filenames()
         print('LSTM model init...')
-        load_model(self.filename, self.jsonfile)
+        self.load_model(self.filename, self.jsonfile)
         self.initialize_data()
         print('LSTM model initialized...')
 
