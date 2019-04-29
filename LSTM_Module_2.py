@@ -13,7 +13,7 @@ import datetime
 
 warnings.filterwarnings("ignore")
 
-class NeuralNetworkModel():
+class NeuralNetworkModel(Initable):
 
     def load_data(self, filename, seq_len, normalise_window):
         self.myDataFromCSV = pd.read_csv(filename)
@@ -158,26 +158,29 @@ class NeuralNetworkModel():
 
         return self.result
 
+    def initialize(self):
+        print('LSTM model init...')
+        X_train, y_train, X_test, y_test = self.load_data('data\minutes.csv', 50, True)
+
+        layers = []
+        self.model = self.build_model(layers)
+        self.model.fit(
+            X_train,
+            y_train,
+            batch_size=512,
+            nb_epoch=1,
+            validation_split=0.05)
+        predictions = self.predict_sequences_multiple(self.model, X_test, 50, 50)
+
 if __name__ == '__main__':
     a = NeuralNetworkModel()
-    X_train, y_train, X_test, y_test = a.load_data('minutes.csv', 50, True)
-    layers = []
-    model = a.build_model(layers)
-
-    model.fit(
-        X_train,
-        y_train,
-        batch_size=512,
-        nb_epoch=1,
-        validation_split=0.05)
-    
-    predictions = a.predict_sequences_multiple(model, X_test, 50, 50)
+    model = a.initialize()
         
     #save
     a.save_model(model, "model.h5", "model.json")
 
     #load
-    loaded_model = a.load_model('model.json')
+##    loaded_model = a.load_model('model.json')
                         
     
 ##    a.save_model(model)
