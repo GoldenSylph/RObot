@@ -5,13 +5,13 @@ import numpy as np
 import tensorflow as tf
 import datetime
 import matplotlib.pyplot as plt
+import keras
 
 from numpy import newaxis
 from keras.layers.core import Dense, Activation, Dropout
 from keras.layers.recurrent import LSTM
 from keras.models import Sequential
 from keras.models import model_from_json
-
 from API import Initable
 
 warnings.filterwarnings("ignore")
@@ -130,6 +130,7 @@ class NeuralNetworkModel(Initable):
     def initialize(self):
         self.initialize_filenames()
         print('LSTM model init...')
+        keras.backend.clear_session()
         self.load_model(self.filename, self.jsonfile)
         self.initialize_data(self.data_file_name)
         print('LSTM model initialized...')
