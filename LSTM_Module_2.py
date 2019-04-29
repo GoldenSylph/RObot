@@ -17,17 +17,17 @@ class NeuralNetworkModel(Initable):
 
     def load_data(self, filename, seq_len, normalise_window):
         self.myDataFromCSV = pd.read_csv(filename)
-        self.timestamps_c = []
-        self.prices_c = []
-        self.dates_c = []
+        self.timestamps = []
+        self.prices = []
+        self.dates = []
 
-        self.timestamps_c = self.myDataFromCSV['time'].tolist()
-        self.prices_c = self.myDataFromCSV['last'].tolist()
+        self.timestamps = self.myDataFromCSV['time'].tolist()
+        self.prices = self.myDataFromCSV['last'].tolist()
 
-        for j in self.timestamps_c:
-            self.dates_c.append(time.ctime(j))
+        for j in self.timestamps:
+            self.dates.append(time.ctime(j))
 
-        self.data = self.prices_c
+        self.data = self.prices
 
         sequence_length = seq_len + 1
         result = []
@@ -67,12 +67,12 @@ class NeuralNetworkModel(Initable):
             normalised_data.append(normalised_window)
         return normalised_data
 
-    def build_model(self, layers):
+    def build_model(self):
         self.model = Sequential()
 
         self.model.add(LSTM(
             input_dim=1,
-            output_dim=50,
+            output_dim=1,
             return_sequences=True))
         self.model.add(Dropout(0.2))
 
@@ -93,12 +93,12 @@ class NeuralNetworkModel(Initable):
         
         return self.model
 
-    def predict_point_by_point(self, model, data):
+    """def predict_point_by_point(self, model, data):
         #Predict each timestep given the last sequence of true data, in effect only predicting 1 step ahead each time
         predicted = model.predict(data)
         predicted = np.reshape(predicted, (predicted.size,))
         print('Done predict')
-        return property
+        return predicted
 
     def predict_sequence_full(self, model, data, window_size):
         curr_frame = data[0]
@@ -122,7 +122,7 @@ class NeuralNetworkModel(Initable):
                 curr_frame = np.insert(curr_frame, [window_size-1], predicted[-1], axis=0)
             prediction_seqs.append(predicted)
         print('Done predict')
-        return prediction_seqs
+        return prediction_seqs"""
 
     def save_model(self, model, filename, jsonfile):
         model_json = model.to_json()
@@ -141,29 +141,29 @@ class NeuralNetworkModel(Initable):
         return loaded_model
 
     def get_cost(self, time):
-        myList = time.split('/')
+        return self.model.predict(time)
+        """myList = time.split('/')
         secondaryList = myList[2].split(' ')
         myList = myList[:-1]
         l = myList + secondaryList
         d = datetime.datetime(int(l[2]), int(l[1]), int(l[0]), int(l[3]), int(l[4]), int(l[5]))
         
         self.value = []
-        self.value = self.prices_c[:len(self.x_train)]
+        self.value = self.prices[:len(self.x_train)]
 
-        for i in range (len(self.dates_c)):
-            if self.dates_c[i] == d:
+        for i in range (len(self.dates)):
+            if self.dates[i] == d:
                 self.result = self.value[i]
             else:
-                self.result = 0.000199001731675508
+                self.result = 0.000199001731675508"""
 
-        return self.result
+        #return self.result
 
     def initialize(self):
         print('LSTM model init...')
         X_train, y_train, X_test, y_test = self.load_data('data\minutes.csv', 50, True)
 
-        layers = []
-        self.model = self.build_model(layers)
+        self.model = self.build_model()
         self.model.fit(
             X_train,
             y_train,
