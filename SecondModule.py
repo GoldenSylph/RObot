@@ -21,7 +21,7 @@ class NeuralNetworkModel(Initable):
     def initialize_filenames(self):
         self.filename = 'model_saves/second_module/model_structure.h5'
         self.jsonfile = 'model_saves/second_module/model_weights.json'
-        self.data_file_name = 'data\minutes.csv'
+        self.data_file_name = 'data/minutes.csv'
 
     def initialize_data(self, filename):
         self.data = pd.read_csv(filename)['last'].tolist()
