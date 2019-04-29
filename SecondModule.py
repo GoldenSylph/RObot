@@ -112,7 +112,7 @@ class NeuralNetworkModel(Initable):
         print('Base timestamp is: ' + str(self.base_timestamp))
         main_input = np.array([[[input_timestamp - self.base_timestamp]]])
         print('Main input: ' + str(main_input))
-        return self.denormalise_point(float(self.predict_point_by_point(self.model, main_input)))
+        return str(self.denormalise_point(float(self.predict_point_by_point(self.model, main_input))))
 
     def initialize_and_save(self):
         self.initialize_filenames()
